@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FatLoss">
+<title>Raghul's Fat Loss Tracker</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f1115;color:#e8eaed;padding:16px;padding-top:calc(16px + env(safe-area-inset-top));max-width:480px;margin:0 auto}
+h1{font-size:18px;font-weight:600;margin-bottom:2px}
+.sub{font-size:12px;color:#9aa0a6;margin-bottom:14px}
+.tabs{display:flex;gap:8px;margin-bottom:14px}
+.tab{flex:1;text-align:center;padding:10px;border-radius:10px;background:#1a1d24;font-size:14px;font-weight:600;color:#9aa0a6;cursor:pointer}
+.tab.on{background:#1d9e75;color:#fff}
+.card{background:#1a1d24;border-radius:14px;padding:14px;margin-bottom:12px}
+.card h2{font-size:12px;color:#9aa0a6;font-weight:600;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px}
+.wrow{display:flex;gap:8px}
+.wrow input{flex:1;background:#0f1115;border:1px solid #2c3038;border-radius:10px;padding:12px;color:#e8eaed;font-size:18px;text-align:center}
+.wrow button{background:#1d9e75;color:#fff;border:none;border-radius:10px;padding:12px 20px;font-size:15px;font-weight:600}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.stat{background:#1a1d24;border-radius:12px;padding:10px;text-align:center}
+.stat .v{font-size:19px;font-weight:600;color:#1d9e75}
+.stat .l{font-size:10px;color:#9aa0a6;margin-top:2px}
+.ex{display:flex;align-items:center;gap:10px;padding:12px 10px;border-radius:10px;margin-bottom:6px;background:#0f1115;border:1px solid #2c3038;cursor:pointer;user-select:none}
+.ex.done{background:#12291f;border-color:#1d9e75}
+.ex .chk{width:22px;height:22px;border-radius:50%;border:2px solid #4a4f58;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px}
+.ex.done .chk{background:#1d9e75;border-color:#1d9e75}
+.ex .nm{font-size:14px;flex:1}
+.ex.done .nm{color:#7ee2bb}
+.ex .rp{font-size:11px;color:#9aa0a6}
+.allbtn{width:100%;background:#2c3038;color:#e8eaed;border:none;border-radius:10px;padding:11px;font-size:13px;margin-top:4px}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.day{text-align:center;padding:8px 2px;border-radius:9px;background:#0f1115;border:1px solid #2c3038}
+.day .dn{font-size:10px;color:#9aa0a6}
+.day .pc{font-size:13px;font-weight:600;margin-top:3px}
+.day.today{border-color:#1d9e75}
+.day .pc.full{color:#1d9e75}.day .pc.part{color:#e8b93e}.day .pc.zero{color:#5f6368}
+.msg{font-size:11px;color:#7ee2bb;margin-top:6px;min-height:14px}
+canvas{width:100%!important}
+.chartwrap{position:relative;height:150px}
+.bigstat{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #2c3038;font-size:14px}
+.bigstat:last-child{border:none}
+.bigstat .bv{font-weight:600;color:#1d9e75}
+.bigstat .bv.warn{color:#e8b93e}
+.hide{display:none}
+.streak{font-size:28px;text-align:center;padding:6px 0}
+</style>
+</head>
+<body>
+<h1>Fat Loss Tracker</h1>
+<div class="sub" id="dateLine"></div>
+
+<div class="tabs">
+<div class="tab on" id="tabToday" onclick="showTab('today')">Today</div>
+<div class="tab" id="tabDash" onclick="showTab('dash')">Dashboard</div>
+</div>
+
+<div id="pgToday">
+<div class="stats">
+<div class="stat"><div class="v" id="todayW">—</div><div class="l">TODAY KG</div></div>
+<div class="stat"><div class="v" id="avg7">—</div><div class="l">7-DAY AVG</div></div>
+<div class="stat"><div class="v" id="toGo">—</div><div class="l">TO 70 KG</div></div>
+</div>
+
+<div class="card">
+<h2>Weight</h2>
+<div class="wrow"><input type="number" step="0.05" inputmode="decimal" id="wIn" placeholder="77.25"><button onclick="saveW()">Save</button></div>
+<div class="msg" id="wMsg"></div>
+</div>
+
+<div class="card">
+<h2 id="woTitle">Today's Workout</h2>
+<div id="exList"></div>
+<button class="allbtn" onclick="markAll()">Mark all done</button>
+<div class="msg" id="exMsg"></div>
+</div>
+
+<div class="card">
+<h2>This Week</h2>
+<div class="week" id="weekView"></div>
+</div>
+</div>
+
+<div id="pgDash" class="hide">
+<div class="card">
+<h2>Progress Summary</h2>
+<div class="bigstat"><span>Start weight (Aug 3)</span><span class="bv">77.25 kg</span></div>
+<div class="bigstat"><span>Current 7-day avg</span><span class="bv" id="dAvg">—</span></div>
+<div class="bigstat"><span>Total lost</span><span class="bv" id="dLost">—</span></div>
+<div class="bigstat"><span>Remaining to 70 kg</span><span class="bv" id="dRem">—</span></div>
+<div class="bigstat"><span>Weekly rate (last 14 days)</span><span class="bv" id="dRate">—</span></div>
+<div class="bigstat"><span>Projected date to 70 kg</span><span class="bv" id="dProj">—</span></div>
+</div>
+
+<div class="card">
+<h2>Weight Trend</h2>
+<div class="chartwrap"><canvas id="chart"></canvas></div>
+</div>
+
+<div class="card">
+<h2>Workout Consistency</h2>
+<div class="bigstat"><span>Sessions this week</span><span class="bv" id="dWk">—</span></div>
+<div class="bigstat"><span>Sessions last 30 days</span><span class="bv" id="dMo">—</span></div>
+<div class="bigstat"><span>Current streak</span><span class="bv" id="dStreak">—</span></div>
+<div class="chartwrap" style="height:120px"><canvas id="consChart"></canvas></div>
+</div>
+
+<div class="card">
+<h2>Backup</h2>
+<button class="allbtn" onclick="exportData()">Copy my data (backup)</button>
+<div class="msg" id="bkMsg">Paste it in WhatsApp/Notes monthly — protects against Safari data clearing.</div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script>
+const PLAN={
+1:{name:'Mon · Lower (Quad) + Core',ex:[['Squat / Hack Squat','4x6-8'],['Leg Press','3x10-12'],['Leg Extension','3x12-15'],['Hanging Leg Raise','3x15'],['Cable Woodchop','3x12/side'],['Plank','3x45-60s'],['Zone 2 cardio','15-25 min']]},
+2:{name:'Tue · Upper Push (Chest)',ex:[['Bench Press','4x6-8'],['Incline DB Press','3x10'],['Cable / Pec Deck Fly','3x12'],['Seated DB Shoulder Press','3x8-10'],['DB Front Raise','3x12'],['DB Tricep Kickback','3x12'],['Plank','3x60s'],['Zone 2 cardio','20-25 min']]},
+3:{name:'Wed · Zone 2 + Mobility',ex:[['Zone 2 cardio','40-50 min'],['Superman','3x12'],['Cobra Arch hold','3x20s'],['Dead Bug','3x10/side'],['Butterfly + hip/ham stretch','15 min']]},
+4:{name:'Thu · Lower Posterior + Power',ex:[['Romanian Deadlift','4x8'],['Hip Thrust','3x12'],['Bulgarian Split Squat','3x10/leg'],['Lying Leg Curl','3x12'],['Med Ball Rotational Throw','3x8/side'],['Cable Crunch','3x15'],['Zone 2 cardio','20-25 min']]},
+5:{name:'Fri · Upper Pull + Forearms',ex:[['Lat Pulldown','4x8-10'],['Chest-Supported Row','3x8-10'],['Face Pull','3x15'],['Hammer Curl','3x12'],['Wrist Curls (both)','2x15'],['Pallof Press','3x12/side'],['Side Plank','3x30s/side'],['Easy walk ONLY','15-20 min']]},
+6:{name:'Sat · Cricket Match Day',ex:[['Activation: band work','10 min'],['Light goblet squats','2 sets'],['Rotational swings','2 sets'],['Butterfly stretch','5 min'],['MATCH','play well']]},
+0:{name:'Sun · Recovery',ex:[['Brisk walk','45-60 min'],['Superman + Cobra','3 sets'],['Full stretch routine','15 min']]}
+};
+const KEY='raghul-fatloss-v3';
+let S={w:{'2026-08-03':77.25},d:{}};
+try{const raw=localStorage.getItem(KEY);if(raw)S=JSON.parse(raw);if(!S.w['2026-08-03'])S.w['2026-08-03']=77.25;}catch(e){}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+const tk=()=>new Date().toISOString().slice(0,10);
+const dow=new Date().getDay();
+let ch,cch;
+
+function showTab(t){
+document.getElementById('pgToday').className=t==='today'?'':'hide';
+document.getElementById('pgDash').className=t==='dash'?'':'hide';
+document.getElementById('tabToday').className='tab'+(t==='today'?' on':'');
+document.getElementById('tabDash').className='tab'+(t==='dash'?' on':'');
+if(t==='dash')renderDash();
+}
+
+function render(){
+const now=new Date();
+document.getElementById('dateLine').textContent=now.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'})+' · Target 70 kg';
+const dates=Object.keys(S.w).sort();
+const l7=dates.slice(-7);
+const avg=l7.length?l7.reduce((a,d)=>a+S.w[d],0)/l7.length:null;
+document.getElementById('todayW').textContent=S.w[tk()]?S.w[tk()].toFixed(1):'—';
+document.getElementById('avg7').textContent=avg?avg.toFixed(1):'—';
+document.getElementById('toGo').textContent=avg?(avg-70).toFixed(1):'—';
+renderEx();renderWeek();
+}
+
+function renderEx(){
+const p=PLAN[dow];
+document.getElementById('woTitle').textContent=p.name;
+const done=S.d[tk()]||[];
+const el=document.getElementById('exList');el.innerHTML='';
+p.ex.forEach((e,i)=>{
+const div=document.createElement('div');
+div.className='ex'+(done.includes(i)?' done':'');
+div.innerHTML='<div class="chk">'+(done.includes(i)?'✓':'')+'</div><div class="nm">'+e[0]+'</div><div class="rp">'+e[1]+'</div>';
+div.onclick=()=>{
+let d=S.d[tk()]||[];
+d=d.includes(i)?d.filter(x=>x!==i):[...d,i];
+S.d[tk()]=d;persist();render();
+};
+el.appendChild(div);
+});
+}
+function markAll(){
+S.d[tk()]=PLAN[dow].ex.map((_,i)=>i);persist();
+document.getElementById('exMsg').textContent='All done — solid session 💪';
+render();
+}
+function saveW(){
+const v=parseFloat(document.getElementById('wIn').value);
+if(!v||v<40||v>150){document.getElementById('wMsg').textContent='Enter a valid weight';return;}
+S.w[tk()]=v;persist();
+document.getElementById('wMsg').textContent='Saved';
+document.getElementById('wIn').value='';
+render();
+}
+function renderWeek(){
+const wv=document.getElementById('weekView');wv.innerHTML='';
+const now=new Date();
+const mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));
+for(let i=0;i<7;i++){
+const d=new Date(mon);d.setDate(mon.getDate()+i);
+const k=d.toISOString().slice(0,10);
+const dd=d.getDay();
+const total=PLAN[dd].ex.length;
+const done=(S.d[k]||[]).length;
+const pct=Math.round(done/total*100);
+const div=document.createElement('div');
+div.className='day'+(k===tk()?' today':'');
+const cls=pct===100?'full':pct>0?'part':'zero';
+div.innerHTML='<div class="dn">'+['Su','Mo','Tu','We','Th','Fr','Sa'][dd]+'</div><div class="pc '+cls+'">'+(d>now?'·':pct+'%')+'</div>';
+wv.appendChild(div);
+}
+}
+function weeklyRate(){
+const dates=Object.keys(S.w).sort();
+if(dates.length<4)return null;
+const cutoff=new Date();cutoff.setDate(cutoff.getDate()-14);
+const recent=dates.filter(d=>new Date(d)>=cutoff);
+if(recent.length<4)return null;
+const first=S.w[recent[0]],last=S.w[recent[recent.length-1]];
+const days=(new Date(recent[recent.length-1])-new Date(recent[0]))/(864e5);
+if(days<5)return null;
+return (first-last)/days*7;
+}
+function renderDash(){
+const dates=Object.keys(S.w).sort();
+const l7=dates.slice(-7);
+const avg=l7.length?l7.reduce((a,d)=>a+S.w[d],0)/l7.length:null;
+document.getElementById('dAvg').textContent=avg?avg.toFixed(2)+' kg':'—';
+document.getElementById('dLost').textContent=avg?(77.25-avg).toFixed(2)+' kg':'—';
+document.getElementById('dRem').textContent=avg?(avg-70).toFixed(2)+' kg':'—';
+const rate=weeklyRate();
+const rEl=document.getElementById('dRate');
+if(rate!==null){
+rEl.textContent=rate.toFixed(2)+' kg/wk';
+rEl.className='bv'+((rate<0.3||rate>0.9)?' warn':'');
+const proj=document.getElementById('dProj');
+if(rate>0.05&&avg>70){
+const wks=(avg-70)/rate;
+const d=new Date();d.setDate(d.getDate()+Math.round(wks*7));
+proj.textContent=d.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+}else proj.textContent='need more data';
+}else{rEl.textContent='need ~2 wks data';document.getElementById('dProj').textContent='—';}
+const now=new Date();
+const mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));
+let wk=0;
+for(let i=0;i<7;i++){const d=new Date(mon);d.setDate(mon.getDate()+i);const k=d.toISOString().slice(0,10);if((S.d[k]||[]).length>0)wk++;}
+document.getElementById('dWk').textContent=wk+' / 7';
+let mo=0;
+for(let i=0;i<30;i++){const d=new Date();d.setDate(d.getDate()-i);const k=d.toISOString().slice(0,10);if((S.d[k]||[]).length>0)mo++;}
+document.getElementById('dMo').textContent=mo+' days';
+let streak=0;
+for(let i=0;i<365;i++){const d=new Date();d.setDate(d.getDate()-i);const k=d.toISOString().slice(0,10);if((S.d[k]||[]).length>0)streak++;else if(i>0)break;}
+document.getElementById('dStreak').textContent=streak+(streak===1?' day':' days');
+if(ch)ch.destroy();
+ch=new Chart(document.getElementById('chart'),{
+type:'line',
+data:{labels:dates.map(d=>d.slice(5)),datasets:[{data:dates.map(d=>S.w[d]),borderColor:'#1d9e75',backgroundColor:'rgba(29,158,117,0.1)',fill:true,tension:0.3,pointRadius:3,pointBackgroundColor:'#1d9e75'},{data:dates.map(()=>70),borderColor:'#e8b93e',borderDash:[5,5],pointRadius:0,borderWidth:1}]},
+options:{plugins:{legend:{display:false}},scales:{y:{grace:'5%',ticks:{color:'#9aa0a6'},grid:{color:'#2c3038'}},x:{ticks:{color:'#9aa0a6'},grid:{display:false}}},maintainAspectRatio:false}
+});
+const last14=[];
+for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const k=d.toISOString().slice(0,10);const dd=d.getDay();const pct=Math.round((S.d[k]||[]).length/PLAN[dd].ex.length*100);last14.push({l:k.slice(8),p:pct});}
+if(cch)cch.destroy();
+cch=new Chart(document.getElementById('consChart'),{
+type:'bar',
+data:{labels:last14.map(x=>x.l),datasets:[{data:last14.map(x=>x.p),backgroundColor:last14.map(x=>x.p===100?'#1d9e75':x.p>0?'#e8b93e':'#2c3038'),borderRadius:4}]},
+options:{plugins:{legend:{display:false}},scales:{y:{max:100,ticks:{color:'#9aa0a6',callback:v=>v+'%'},grid:{color:'#2c3038'}},x:{ticks:{color:'#9aa0a6'},grid:{display:false}}},maintainAspectRatio:false}
+});
+}
+function exportData(){
+const txt='FATLOSS BACKUP '+tk()+'\n'+JSON.stringify(S);
+if(navigator.clipboard){navigator.clipboard.writeText(txt).then(()=>{document.getElementById('bkMsg').textContent='Copied! Paste into Notes/WhatsApp to keep safe.';});}
+else{prompt('Copy this:',txt);}
+}
+render();
+</script>
+</body>
+</html>

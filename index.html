@@ -9,7 +9,7 @@
 <title>Raghul's Fat Loss Tracker</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f1115;color:#e8eaed;padding:16px;padding-top:calc(16px + env(safe-area-inset-top));max-width:480px;margin:0 auto}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f1115;color:#e8eaed;padding:16px;padding-top:calc(16px + env(safe-area-inset-top));padding-bottom:40px;max-width:480px;margin:0 auto}
 h1{font-size:18px;font-weight:600;margin-bottom:2px}
 .sub{font-size:12px;color:#9aa0a6;margin-bottom:14px}
 .tabs{display:flex;gap:8px;margin-bottom:14px}
@@ -26,19 +26,25 @@ h1{font-size:18px;font-weight:600;margin-bottom:2px}
 .stat .l{font-size:10px;color:#9aa0a6;margin-top:2px}
 .ex{display:flex;align-items:center;gap:10px;padding:12px 10px;border-radius:10px;margin-bottom:6px;background:#0f1115;border:1px solid #2c3038;cursor:pointer;user-select:none}
 .ex.done{background:#12291f;border-color:#1d9e75}
+.ex.swapped{border-style:dashed;border-color:#7c5cff}
 .ex .chk{width:22px;height:22px;border-radius:50%;border:2px solid #4a4f58;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px}
 .ex.done .chk{background:#1d9e75;border-color:#1d9e75}
 .ex .nm{font-size:14px;flex:1}
 .ex.done .nm{color:#7ee2bb}
-.ex .rp{font-size:11px;color:#9aa0a6}
-.allbtn{width:100%;background:#2c3038;color:#e8eaed;border:none;border-radius:10px;padding:11px;font-size:13px;margin-top:4px}
+.ex .rp{font-size:11px;color:#9aa0a6;text-align:right;white-space:nowrap}
+.tagb{font-size:9px;color:#a992ff;display:block}
+.mini{background:#0f1115;border:1px solid #2c3038;border-radius:8px;color:#e8eaed;font-size:14px;width:58px;text-align:center;padding:7px 4px}
+.allbtn{width:100%;background:#2c3038;color:#e8eaed;border:none;border-radius:10px;padding:11px;font-size:13px;margin-top:6px}
+.savebtn{width:100%;background:#1d9e75;color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:700;margin-top:8px}
+.noteb{width:100%;background:#0f1115;border:1px solid #2c3038;border-radius:10px;padding:11px;color:#e8eaed;font-size:13px;resize:none;font-family:inherit}
+.hint{font-size:10px;color:#5f6368;margin-top:6px;line-height:1.5}
 .week{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
 .day{text-align:center;padding:8px 2px;border-radius:9px;background:#0f1115;border:1px solid #2c3038}
 .day .dn{font-size:10px;color:#9aa0a6}
 .day .pc{font-size:13px;font-weight:600;margin-top:3px}
 .day.today{border-color:#1d9e75}
 .day .pc.full{color:#1d9e75}.day .pc.part{color:#e8b93e}.day .pc.zero{color:#5f6368}
-.msg{font-size:11px;color:#7ee2bb;margin-top:6px;min-height:14px}
+.msg{font-size:11px;color:#7ee2bb;margin-top:8px;min-height:14px;line-height:1.5}
 canvas{width:100%!important}
 .chartwrap{position:relative;height:150px}
 .bigstat{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #2c3038;font-size:14px}
@@ -46,7 +52,7 @@ canvas{width:100%!important}
 .bigstat .bv{font-weight:600;color:#1d9e75}
 .bigstat .bv.warn{color:#e8b93e}
 .hide{display:none}
-.streak{font-size:28px;text-align:center;padding:6px 0}
+.totbar{display:flex;justify-content:space-between;font-size:12px;color:#9aa0a6;padding-top:10px;margin-top:4px;border-top:1px solid #2c3038}
 </style>
 </head>
 <body>
@@ -74,8 +80,27 @@ canvas{width:100%!important}
 <div class="card">
 <h2 id="woTitle">Today's Workout</h2>
 <div id="exList"></div>
-<button class="allbtn" onclick="markAll()">Mark all done</button>
+<button class="allbtn" onclick="markAll()">Mark all strength done</button>
+</div>
+
+<div class="card">
+<h2>Cardio · minutes</h2>
+<div id="cardioList"></div>
+<div class="totbar"><span>Today's total</span><span id="cardTot" style="color:#1d9e75;font-weight:600">0 min</span></div>
+</div>
+
+<div class="card">
+<h2>Stretches &amp; Mobility</h2>
+<div id="stretchList"></div>
+<button class="allbtn" onclick="markCore()">Mark my core 6 done</button>
+</div>
+
+<div class="card">
+<h2>Session Notes</h2>
+<textarea class="noteb" id="noteBox" rows="3" placeholder="e.g. did RDL and hip thrust today, skipped leg press, knee tight"></textarea>
+<button class="savebtn" onclick="saveSession()">Save Session</button>
 <div class="msg" id="exMsg"></div>
+<div class="hint">Type exercise names naturally. If you mention something scheduled for a later day, it gets ticked off today and that day automatically gets a similar variant in its place.</div>
 </div>
 
 <div class="card">
@@ -101,7 +126,16 @@ canvas{width:100%!important}
 </div>
 
 <div class="card">
-<h2>Workout Consistency</h2>
+<h2>Cardio Volume</h2>
+<div class="bigstat"><span>This week</span><span class="bv" id="dCardWk">—</span></div>
+<div class="bigstat"><span>Weekly target</span><span class="bv">150-180 min</span></div>
+<div class="bigstat"><span>Last 30 days</span><span class="bv" id="dCardMo">—</span></div>
+<div class="bigstat"><span>Daily average (30d)</span><span class="bv" id="dCardAvg">—</span></div>
+<div class="chartwrap" style="height:130px"><canvas id="cardChart"></canvas></div>
+</div>
+
+<div class="card">
+<h2>Training Consistency</h2>
 <div class="bigstat"><span>Sessions this week</span><span class="bv" id="dWk">—</span></div>
 <div class="bigstat"><span>Sessions last 30 days</span><span class="bv" id="dMo">—</span></div>
 <div class="bigstat"><span>Current streak</span><span class="bv" id="dStreak">—</span></div>
@@ -109,31 +143,91 @@ canvas{width:100%!important}
 </div>
 
 <div class="card">
+<h2>Recent Session Notes</h2>
+<div id="noteLog" style="font-size:12px;color:#9aa0a6"></div>
+</div>
+
+<div class="card">
 <h2>Backup</h2>
 <button class="allbtn" onclick="exportData()">Copy my data (backup)</button>
-<div class="msg" id="bkMsg">Paste it in WhatsApp/Notes monthly — protects against Safari data clearing.</div>
+<div class="msg" id="bkMsg">Paste in WhatsApp/Notes monthly — protects against Safari data clearing.</div>
 </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <script>
+/* exercise: [name, prescription, keywords, adaptive variant if borrowed early] */
 const PLAN={
-1:{name:'Mon · Lower (Quad) + Core',ex:[['Squat / Hack Squat','4x6-8'],['Leg Press','3x10-12'],['Leg Extension','3x12-15'],['Hanging Leg Raise','3x15'],['Cable Woodchop','3x12/side'],['Plank','3x45-60s'],['Zone 2 cardio','15-25 min']]},
-2:{name:'Tue · Upper Push (Chest)',ex:[['Bench Press','4x6-8'],['Incline DB Press','3x10'],['Cable / Pec Deck Fly','3x12'],['Seated DB Shoulder Press','3x8-10'],['DB Front Raise','3x12'],['DB Tricep Kickback','3x12'],['Plank','3x60s'],['Zone 2 cardio','20-25 min']]},
-3:{name:'Wed · Zone 2 + Mobility',ex:[['Zone 2 cardio','40-50 min'],['Superman','3x12'],['Cobra Arch hold','3x20s'],['Dead Bug','3x10/side'],['Butterfly + hip/ham stretch','15 min']]},
-4:{name:'Thu · Lower Posterior + Power',ex:[['Romanian Deadlift','4x8'],['Hip Thrust','3x12'],['Bulgarian Split Squat','3x10/leg'],['Lying Leg Curl','3x12'],['Med Ball Rotational Throw','3x8/side'],['Cable Crunch','3x15'],['Zone 2 cardio','20-25 min']]},
-5:{name:'Fri · Upper Pull + Forearms',ex:[['Lat Pulldown','4x8-10'],['Chest-Supported Row','3x8-10'],['Face Pull','3x15'],['Hammer Curl','3x12'],['Wrist Curls (both)','2x15'],['Pallof Press','3x12/side'],['Side Plank','3x30s/side'],['Easy walk ONLY','15-20 min']]},
-6:{name:'Sat · Cricket Match Day',ex:[['Activation: band work','10 min'],['Light goblet squats','2 sets'],['Rotational swings','2 sets'],['Butterfly stretch','5 min'],['MATCH','play well']]},
-0:{name:'Sun · Recovery',ex:[['Brisk walk','45-60 min'],['Superman + Cobra','3 sets'],['Full stretch routine','15 min']]}
+1:{name:'Mon · Lower (Quad) + Core',ex:[
+['Squat / Hack Squat','4x6-8',['squat','hack'],'Goblet Squat 3x12'],
+['Leg Press','3x10-12',['leg press','press machine'],'Split Squat 3x10/leg'],
+['Leg Extension','3x12-15',['leg ext','extension','extn'],'Sissy Squat 3x12'],
+['Hanging Leg Raise','3x15',['hanging','leg raise'],'Lying Leg Raise 3x15'],
+['Cable Woodchop','3x12/side',['woodchop','wood chop','chop'],'Med Ball Twist 3x15/side'],
+['Plank','3x45-60s',['plank'],'Hollow Hold 3x30s']]},
+2:{name:'Tue · Upper Push (Chest)',ex:[
+['Bench Press','4x6-8',['bench','bench press'],'DB Flat Press 4x8'],
+['Incline DB Press','3x10',['incline','incline db'],'Incline Machine Press 3x12'],
+['Cable / Pec Deck Fly','3x12',['fly','flys','flies','pec deck'],'DB Fly 3x12'],
+['Seated DB Shoulder Press','3x8-10',['shoulder press','ohp','overhead'],'Machine Shoulder Press 3x10'],
+['DB Front Raise','3x12',['front raise'],'Plate Front Raise 3x15'],
+['DB Tricep Kickback','3x12',['kickback','pushback','tricep'],'Rope Pushdown 3x12'],
+['Plank','3x60s',['plank'],'Ab Wheel 3x10']]},
+3:{name:'Wed · Zone 2 + Mobility',ex:[
+['Superman','3x12',['superman'],'Back Extension 3x12'],
+['Cobra Arch hold','3x20s',['cobra'],'Prone Press-up 3x20s'],
+['Dead Bug','3x10/side',['dead bug','deadbug'],'Bird Dog 3x10/side']]},
+4:{name:'Thu · Lower Posterior + Power',ex:[
+['Romanian Deadlift','4x8',['rdl','romanian','deadlift'],'Good Morning 3x10'],
+['Hip Thrust','3x12',['hip thrust','thrust'],'Glute Bridge 3x15'],
+['Bulgarian Split Squat','3x10/leg',['bulgarian','split squat'],'Reverse Lunge 3x12/leg'],
+['Lying Leg Curl','3x12',['leg curl','hamstring curl','curl machine'],'Nordic Curl 3x8'],
+['Med Ball Rotational Throw','3x8/side',['med ball','rotational','throw'],'Cable Rotation 3x12/side'],
+['Cable Crunch','3x15',['cable crunch','crunch'],'Decline Sit-up 3x15']]},
+5:{name:'Fri · Upper Pull + Forearms',ex:[
+['Lat Pulldown','4x8-10',['pulldown','lat pull','lats'],'Assisted Pull-up 4x8'],
+['Chest-Supported Row','3x8-10',['row','chest supported','csr'],'Seated Cable Row 3x12'],
+['Face Pull','3x15',['face pull'],'Band Pull-apart 3x20'],
+['Hammer Curl','3x12',['hammer','bicep','curl'],'Barbell Curl 3x10'],
+['Wrist Curls (both)','2x15',['wrist','forearm'],'Farmer Carry 3x40m'],
+['Pallof Press','3x12/side',['pallof'],'Anti-rotation Hold 3x30s/side'],
+['Side Plank','3x30s/side',['side plank'],'Suitcase Carry 3x30m']]},
+6:{name:'Sat · Cricket Match Day',ex:[
+['Band activation work','10 min',['band','activation'],'Dynamic Warm-up 10 min'],
+['Light goblet squats','2 sets',['goblet'],'Bodyweight Squat 2x15'],
+['Rotational swings','2 sets',['swing','rotational swing'],'Trunk Rotations 2x15'],
+['MATCH','play well',['match','cricket'],'Net Practice']]},
+0:{name:'Sun · Recovery',ex:[
+['Superman + Cobra','3 sets',['superman','cobra'],'Back Extension 3x12']]}
 };
-const KEY='raghul-fatloss-v3';
-let S={w:{'2026-08-03':77.25},d:{}};
-try{const raw=localStorage.getItem(KEY);if(raw)S=JSON.parse(raw);if(!S.w['2026-08-03'])S.w['2026-08-03']=77.25;}catch(e){}
+const CARDIO=['Incline treadmill walk','Stairmaster','Stationary bike','Rowing machine','Elliptical','Outdoor brisk walk','Assault bike intervals','Cricket match'];
+const STRETCH=[
+['Butterfly stretch',1],['Hip flexor / couch stretch',1],['Hamstring stretch',1],
+['Thoracic rotation (open book)',1],['Cobra arch',1],['Chest / shoulder opener',1],
+['90-90 hip stretch',0],['Piriformis / figure-4',0],['World\u2019s greatest stretch',0],
+['Deep squat hold',0],['Cat-cow',0],['Child\u2019s pose',0],
+['Quad stretch',0],['Calf + ankle mobility',0],['Wrist / forearm stretch',0],
+['Neck rolls',0],['Shoulder dislocates (band)',0],['Couch-side lat stretch',0]];
+const KEY='raghul-fatloss-v5';
+let S={w:{'2026-08-03':77.25},d:{},cardio:{},stretch:{},notes:{},added:{},swaps:{}};
+try{const raw=localStorage.getItem(KEY);if(raw){const p=JSON.parse(raw);S={...S,...p};}
+if(!S.w['2026-08-03'])S.w['2026-08-03']=77.25;
+['d','cardio','stretch','notes','added','swaps'].forEach(k=>{if(!S[k])S[k]={};});}catch(e){}
 function persist(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 const tk=()=>new Date().toISOString().slice(0,10);
 const dow=new Date().getDay();
-let ch,cch;
+let ch,cch,cdch;
 
+function dayList(k,dw){
+const sw=S.swaps[k]||{};
+const base=PLAN[dw].ex.map((e,i)=>{
+const id=dw+'-'+i;
+if(sw[id])return{n:sw[id],r:'variant',id:id,swapped:true};
+return{n:e[0],r:e[1],id:id};
+});
+const extra=(S.added[k]||[]).map(a=>({n:a.n,r:a.r,id:a.id,pulled:a.from}));
+return base.concat(extra);
+}
 function showTab(t){
 document.getElementById('pgToday').className=t==='today'?'':'hide';
 document.getElementById('pgDash').className=t==='dash'?'':'hide';
@@ -141,127 +235,180 @@ document.getElementById('tabToday').className='tab'+(t==='today'?' on':'');
 document.getElementById('tabDash').className='tab'+(t==='dash'?' on':'');
 if(t==='dash')renderDash();
 }
-
 function render(){
 const now=new Date();
 document.getElementById('dateLine').textContent=now.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'})+' · Target 70 kg';
-const dates=Object.keys(S.w).sort();
-const l7=dates.slice(-7);
+const dates=Object.keys(S.w).sort(),l7=dates.slice(-7);
 const avg=l7.length?l7.reduce((a,d)=>a+S.w[d],0)/l7.length:null;
 document.getElementById('todayW').textContent=S.w[tk()]?S.w[tk()].toFixed(1):'—';
 document.getElementById('avg7').textContent=avg?avg.toFixed(1):'—';
 document.getElementById('toGo').textContent=avg?(avg-70).toFixed(1):'—';
-renderEx();renderWeek();
+renderEx();renderCardio();renderStretch();renderWeek();
+document.getElementById('noteBox').value=S.notes[tk()]||'';
 }
-
 function renderEx(){
-const p=PLAN[dow];
-document.getElementById('woTitle').textContent=p.name;
-const done=S.d[tk()]||[];
+document.getElementById('woTitle').textContent=PLAN[dow].name;
+const list=dayList(tk(),dow),done=S.d[tk()]||[];
 const el=document.getElementById('exList');el.innerHTML='';
-p.ex.forEach((e,i)=>{
+list.forEach(it=>{
+const isDone=done.includes(it.id);
 const div=document.createElement('div');
-div.className='ex'+(done.includes(i)?' done':'');
-div.innerHTML='<div class="chk">'+(done.includes(i)?'✓':'')+'</div><div class="nm">'+e[0]+'</div><div class="rp">'+e[1]+'</div>';
-div.onclick=()=>{
-let d=S.d[tk()]||[];
-d=d.includes(i)?d.filter(x=>x!==i):[...d,i];
-S.d[tk()]=d;persist();render();
-};
+div.className='ex'+(isDone?' done':'')+((it.pulled||it.swapped)?' swapped':'');
+div.innerHTML='<div class="chk">'+(isDone?'✓':'')+'</div><div class="nm">'+it.n+
+(it.pulled?'<span class="tagb">pulled forward from '+it.pulled+'</span>':'')+
+(it.swapped?'<span class="tagb">adaptive variant</span>':'')+
+'</div><div class="rp">'+it.r+'</div>';
+div.onclick=()=>{let d=S.d[tk()]||[];d=d.includes(it.id)?d.filter(x=>x!==it.id):[...d,it.id];S.d[tk()]=d;persist();render();};
 el.appendChild(div);
 });
 }
-function markAll(){
-S.d[tk()]=PLAN[dow].ex.map((_,i)=>i);persist();
-document.getElementById('exMsg').textContent='All done — solid session 💪';
-render();
+function renderCardio(){
+const el=document.getElementById('cardioList');el.innerHTML='';
+const c=S.cardio[tk()]||{};
+CARDIO.forEach(name=>{
+const on=c[name]!==undefined;
+const div=document.createElement('div');div.className='ex'+(on?' done':'');
+const chk=document.createElement('div');chk.className='chk';chk.textContent=on?'✓':'';
+const nm=document.createElement('div');nm.className='nm';nm.textContent=name;
+chk.onclick=nm.onclick=()=>{const cc=S.cardio[tk()]||{};if(cc[name]!==undefined)delete cc[name];else cc[name]=25;S.cardio[tk()]=cc;persist();render();};
+div.appendChild(chk);div.appendChild(nm);
+if(on){
+const inp=document.createElement('input');inp.type='number';inp.inputMode='numeric';inp.className='mini';inp.value=c[name];
+inp.onclick=e=>e.stopPropagation();
+inp.onchange=()=>{const cc=S.cardio[tk()];cc[name]=parseInt(inp.value)||0;S.cardio[tk()]=cc;persist();render();};
+const lbl=document.createElement('div');lbl.className='rp';lbl.textContent='min';
+div.appendChild(inp);div.appendChild(lbl);
 }
+el.appendChild(div);
+});
+document.getElementById('cardTot').textContent=Object.values(c).reduce((a,b)=>a+b,0)+' min';
+}
+function renderStretch(){
+const el=document.getElementById('stretchList');el.innerHTML='';
+const s=S.stretch[tk()]||[];
+STRETCH.forEach(([name])=>{
+const div=document.createElement('div');div.className='ex'+(s.includes(name)?' done':'');
+div.innerHTML='<div class="chk">'+(s.includes(name)?'✓':'')+'</div><div class="nm">'+name+'</div>';
+div.onclick=()=>{let a=S.stretch[tk()]||[];a=a.includes(name)?a.filter(x=>x!==name):[...a,name];S.stretch[tk()]=a;persist();render();};
+el.appendChild(div);
+});
+}
+function markAll(){S.d[tk()]=dayList(tk(),dow).map(x=>x.id);persist();render();}
+function markCore(){S.stretch[tk()]=STRETCH.filter(x=>x[1]===1).map(x=>x[0]);persist();render();}
 function saveW(){
 const v=parseFloat(document.getElementById('wIn').value);
 if(!v||v<40||v>150){document.getElementById('wMsg').textContent='Enter a valid weight';return;}
-S.w[tk()]=v;persist();
-document.getElementById('wMsg').textContent='Saved';
-document.getElementById('wIn').value='';
-render();
+S.w[tk()]=v;persist();document.getElementById('wMsg').textContent='Saved';
+document.getElementById('wIn').value='';render();
+}
+function saveSession(){
+const txt=document.getElementById('noteBox').value;
+S.notes[tk()]=txt.trim();
+const low=txt.toLowerCase();
+const names=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+let pulled=[];
+if(low.length>2){
+for(let i=1;i<=6;i++){
+const d=new Date();d.setDate(d.getDate()+i);
+const k=d.toISOString().slice(0,10),dw=d.getDay();
+const sw=S.swaps[k]||{};
+PLAN[dw].ex.forEach((e,idx)=>{
+const id=dw+'-'+idx;
+if(sw[id])return;
+const hit=e[2].some(kw=>low.includes(kw));
+if(!hit)return;
+const already=(S.added[tk()]||[]).some(a=>a.n===e[0]);
+if(already)return;
+const add=S.added[tk()]||[];
+const nid='p-'+id+'-'+Date.now()+'-'+idx;
+add.push({n:e[0],r:e[1],id:nid,from:names[dw]});
+S.added[tk()]=add;
+const dd=S.d[tk()]||[];dd.push(nid);S.d[tk()]=dd;
+sw[id]=e[3];S.swaps[k]=sw;
+pulled.push(e[0]+' → '+names[dw]+' now has '+e[3]);
+});
+}
+}
+persist();render();
+const n=(S.d[tk()]||[]).length,t=dayList(tk(),dow).length;
+const cm=Object.values(S.cardio[tk()]||{}).reduce((a,b)=>a+b,0);
+let m='Saved · '+n+'/'+t+' strength · '+cm+' min cardio · '+(S.stretch[tk()]||[]).length+' stretches';
+if(pulled.length)m+='<br>Adapted: '+pulled.join('; ');
+document.getElementById('exMsg').innerHTML=m;
 }
 function renderWeek(){
 const wv=document.getElementById('weekView');wv.innerHTML='';
-const now=new Date();
-const mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));
+const now=new Date();const mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));
 for(let i=0;i<7;i++){
 const d=new Date(mon);d.setDate(mon.getDate()+i);
-const k=d.toISOString().slice(0,10);
-const dd=d.getDay();
-const total=PLAN[dd].ex.length;
-const done=(S.d[k]||[]).length;
-const pct=Math.round(done/total*100);
-const div=document.createElement('div');
-div.className='day'+(k===tk()?' today':'');
-const cls=pct===100?'full':pct>0?'part':'zero';
-div.innerHTML='<div class="dn">'+['Su','Mo','Tu','We','Th','Fr','Sa'][dd]+'</div><div class="pc '+cls+'">'+(d>now?'·':pct+'%')+'</div>';
+const k=d.toISOString().slice(0,10),dd=d.getDay();
+const total=dayList(k,dd).length||1,done=(S.d[k]||[]).length;
+const pct=Math.min(100,Math.round(done/total*100));
+const div=document.createElement('div');div.className='day'+(k===tk()?' today':'');
+const cls=pct>=100?'full':pct>0?'part':'zero';
+div.innerHTML='<div class="dn">'+['Su','Mo','Tu','We','Th','Fr','Sa'][dd]+'</div><div class="pc '+cls+'">'+(d>now&&k!==tk()?'·':pct+'%')+'</div>';
 wv.appendChild(div);
 }
 }
 function weeklyRate(){
-const dates=Object.keys(S.w).sort();
-if(dates.length<4)return null;
-const cutoff=new Date();cutoff.setDate(cutoff.getDate()-14);
-const recent=dates.filter(d=>new Date(d)>=cutoff);
-if(recent.length<4)return null;
-const first=S.w[recent[0]],last=S.w[recent[recent.length-1]];
-const days=(new Date(recent[recent.length-1])-new Date(recent[0]))/(864e5);
-if(days<5)return null;
-return (first-last)/days*7;
+const dates=Object.keys(S.w).sort();if(dates.length<4)return null;
+const co=new Date();co.setDate(co.getDate()-14);
+const r=dates.filter(d=>new Date(d)>=co);if(r.length<4)return null;
+const days=(new Date(r[r.length-1])-new Date(r[0]))/864e5;if(days<5)return null;
+return (S.w[r[0]]-S.w[r[r.length-1]])/days*7;
 }
+const cardioMins=k=>Object.values(S.cardio[k]||{}).reduce((a,b)=>a+b,0);
 function renderDash(){
-const dates=Object.keys(S.w).sort();
-const l7=dates.slice(-7);
+const dates=Object.keys(S.w).sort(),l7=dates.slice(-7);
 const avg=l7.length?l7.reduce((a,d)=>a+S.w[d],0)/l7.length:null;
 document.getElementById('dAvg').textContent=avg?avg.toFixed(2)+' kg':'—';
 document.getElementById('dLost').textContent=avg?(77.25-avg).toFixed(2)+' kg':'—';
 document.getElementById('dRem').textContent=avg?(avg-70).toFixed(2)+' kg':'—';
-const rate=weeklyRate();
-const rEl=document.getElementById('dRate');
-if(rate!==null){
-rEl.textContent=rate.toFixed(2)+' kg/wk';
-rEl.className='bv'+((rate<0.3||rate>0.9)?' warn':'');
-const proj=document.getElementById('dProj');
-if(rate>0.05&&avg>70){
-const wks=(avg-70)/rate;
-const d=new Date();d.setDate(d.getDate()+Math.round(wks*7));
-proj.textContent=d.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
-}else proj.textContent='need more data';
-}else{rEl.textContent='need ~2 wks data';document.getElementById('dProj').textContent='—';}
-const now=new Date();
-const mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));
-let wk=0;
-for(let i=0;i<7;i++){const d=new Date(mon);d.setDate(mon.getDate()+i);const k=d.toISOString().slice(0,10);if((S.d[k]||[]).length>0)wk++;}
+const rate=weeklyRate(),rEl=document.getElementById('dRate');
+if(rate!==null){rEl.textContent=rate.toFixed(2)+' kg/wk';rEl.className='bv'+((rate<0.3||rate>0.9)?' warn':'');
+const pj=document.getElementById('dProj');
+if(rate>0.05&&avg>70){const w=(avg-70)/rate;const d=new Date();d.setDate(d.getDate()+Math.round(w*7));pj.textContent=d.toLocaleDateString('en-IN',{day:'numeric',month:'short'});}
+else pj.textContent='need more data';}
+else{rEl.textContent='need ~2 wks data';document.getElementById('dProj').textContent='—';}
+const now=new Date();const mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));
+let wk=0,cwk=0;
+for(let i=0;i<7;i++){const d=new Date(mon);d.setDate(mon.getDate()+i);const k=d.toISOString().slice(0,10);if((S.d[k]||[]).length>0)wk++;cwk+=cardioMins(k);}
 document.getElementById('dWk').textContent=wk+' / 7';
-let mo=0;
-for(let i=0;i<30;i++){const d=new Date();d.setDate(d.getDate()-i);const k=d.toISOString().slice(0,10);if((S.d[k]||[]).length>0)mo++;}
+document.getElementById('dCardWk').textContent=cwk+' min';
+let mo=0,cmo=0;
+for(let i=0;i<30;i++){const d=new Date();d.setDate(d.getDate()-i);const k=d.toISOString().slice(0,10);if((S.d[k]||[]).length>0)mo++;cmo+=cardioMins(k);}
 document.getElementById('dMo').textContent=mo+' days';
-let streak=0;
-for(let i=0;i<365;i++){const d=new Date();d.setDate(d.getDate()-i);const k=d.toISOString().slice(0,10);if((S.d[k]||[]).length>0)streak++;else if(i>0)break;}
-document.getElementById('dStreak').textContent=streak+(streak===1?' day':' days');
+document.getElementById('dCardMo').textContent=cmo+' min';
+document.getElementById('dCardAvg').textContent=Math.round(cmo/30)+' min/day';
+let st=0;
+for(let i=0;i<365;i++){const d=new Date();d.setDate(d.getDate()-i);const k=d.toISOString().slice(0,10);if((S.d[k]||[]).length>0)st++;else if(i>0)break;}
+document.getElementById('dStreak').textContent=st+(st===1?' day':' days');
+const nl=document.getElementById('noteLog');nl.innerHTML='';
+Object.keys(S.notes).sort().reverse().slice(0,7).forEach(k=>{if(!S.notes[k])return;
+const p=document.createElement('div');p.style.cssText='padding:7px 0;border-bottom:1px solid #2c3038';
+p.innerHTML='<span style="color:#1d9e75">'+k.slice(5)+'</span> · '+S.notes[k];nl.appendChild(p);});
+if(!nl.innerHTML)nl.textContent='No notes yet.';
 if(ch)ch.destroy();
-ch=new Chart(document.getElementById('chart'),{
-type:'line',
-data:{labels:dates.map(d=>d.slice(5)),datasets:[{data:dates.map(d=>S.w[d]),borderColor:'#1d9e75',backgroundColor:'rgba(29,158,117,0.1)',fill:true,tension:0.3,pointRadius:3,pointBackgroundColor:'#1d9e75'},{data:dates.map(()=>70),borderColor:'#e8b93e',borderDash:[5,5],pointRadius:0,borderWidth:1}]},
-options:{plugins:{legend:{display:false}},scales:{y:{grace:'5%',ticks:{color:'#9aa0a6'},grid:{color:'#2c3038'}},x:{ticks:{color:'#9aa0a6'},grid:{display:false}}},maintainAspectRatio:false}
-});
-const last14=[];
-for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const k=d.toISOString().slice(0,10);const dd=d.getDay();const pct=Math.round((S.d[k]||[]).length/PLAN[dd].ex.length*100);last14.push({l:k.slice(8),p:pct});}
+ch=new Chart(document.getElementById('chart'),{type:'line',
+data:{labels:dates.map(d=>d.slice(5)),datasets:[{data:dates.map(d=>S.w[d]),borderColor:'#1d9e75',backgroundColor:'rgba(29,158,117,.1)',fill:true,tension:.3,pointRadius:3,pointBackgroundColor:'#1d9e75'},{data:dates.map(()=>70),borderColor:'#e8b93e',borderDash:[5,5],pointRadius:0,borderWidth:1}]},
+options:{plugins:{legend:{display:false}},scales:{y:{grace:'5%',ticks:{color:'#9aa0a6'},grid:{color:'#2c3038'}},x:{ticks:{color:'#9aa0a6'},grid:{display:false}}},maintainAspectRatio:false}});
+const l14=[],c14=[];
+for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const k=d.toISOString().slice(0,10),dd=d.getDay();
+const t=dayList(k,dd).length||1;l14.push({l:k.slice(8),p:Math.min(100,Math.round((S.d[k]||[]).length/t*100))});
+c14.push({l:k.slice(8),m:cardioMins(k)});}
 if(cch)cch.destroy();
-cch=new Chart(document.getElementById('consChart'),{
-type:'bar',
-data:{labels:last14.map(x=>x.l),datasets:[{data:last14.map(x=>x.p),backgroundColor:last14.map(x=>x.p===100?'#1d9e75':x.p>0?'#e8b93e':'#2c3038'),borderRadius:4}]},
-options:{plugins:{legend:{display:false}},scales:{y:{max:100,ticks:{color:'#9aa0a6',callback:v=>v+'%'},grid:{color:'#2c3038'}},x:{ticks:{color:'#9aa0a6'},grid:{display:false}}},maintainAspectRatio:false}
-});
+cch=new Chart(document.getElementById('consChart'),{type:'bar',
+data:{labels:l14.map(x=>x.l),datasets:[{data:l14.map(x=>x.p),backgroundColor:l14.map(x=>x.p>=100?'#1d9e75':x.p>0?'#e8b93e':'#2c3038'),borderRadius:4}]},
+options:{plugins:{legend:{display:false}},scales:{y:{max:100,ticks:{color:'#9aa0a6',callback:v=>v+'%'},grid:{color:'#2c3038'}},x:{ticks:{color:'#9aa0a6'},grid:{display:false}}},maintainAspectRatio:false}});
+if(cdch)cdch.destroy();
+cdch=new Chart(document.getElementById('cardChart'),{type:'bar',
+data:{labels:c14.map(x=>x.l),datasets:[{data:c14.map(x=>x.m),backgroundColor:'#3a86ff',borderRadius:4}]},
+options:{plugins:{legend:{display:false}},scales:{y:{ticks:{color:'#9aa0a6',callback:v=>v+'m'},grid:{color:'#2c3038'}},x:{ticks:{color:'#9aa0a6'},grid:{display:false}}},maintainAspectRatio:false}});
 }
 function exportData(){
 const txt='FATLOSS BACKUP '+tk()+'\n'+JSON.stringify(S);
-if(navigator.clipboard){navigator.clipboard.writeText(txt).then(()=>{document.getElementById('bkMsg').textContent='Copied! Paste into Notes/WhatsApp to keep safe.';});}
-else{prompt('Copy this:',txt);}
+if(navigator.clipboard)navigator.clipboard.writeText(txt).then(()=>{document.getElementById('bkMsg').textContent='Copied! Paste into Notes/WhatsApp.';});
+else prompt('Copy this:',txt);
 }
 render();
 </script>

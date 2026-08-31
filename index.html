@@ -128,6 +128,34 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .wex:last-child{border:none}
 .wex span:last-child{color:#4a5262;font-size:10px}
 .wgh{font-size:9px;color:#4a5262;letter-spacing:.7px;margin:8px 0 3px;font-weight:700}
+.find{background:#0b0f16;border:1px solid #1b222e;border-left:3px solid #4c8dff;border-radius:9px;padding:11px 12px;margin-bottom:7px}
+.find b{font-size:12.5px;color:#8fb8ff;display:block;margin-bottom:4px}
+.find span{font-size:11.5px;color:#8a94a6;line-height:1.55}
+.vrow{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.vrow .vn{font-size:11px;color:#8a94a6;width:66px}
+.vrow .vb{flex:1;height:16px;background:#0b0f16;border-radius:5px;overflow:hidden}
+.vrow .vb div{height:100%;background:linear-gradient(90deg,#1d6b4f,#25d196);border-radius:5px}
+.vrow .vv{font-size:11px;color:#25d196;width:34px;text-align:right;font-weight:600}
+.hrow{background:#0b0f16;border:1px solid #1b222e;border-radius:9px;padding:10px 11px;margin-bottom:6px;cursor:pointer}
+.hrow .hh{display:flex;justify-content:space-between;align-items:center}
+.hrow .hd2{font-size:12px;font-weight:600}
+.hrow .hm{font-size:10px;color:#6b7280}
+.hrow .hb{display:none;margin-top:8px;padding-top:8px;border-top:1px solid #161c27}
+.hrow.open .hb{display:block}
+.hrow .he{font-size:11px;color:#8a94a6;padding:3px 0;display:flex;justify-content:space-between}
+.hrow .he span:last-child{color:#4a5262}
+.hrow .hnote{font-size:11px;color:#e2c98a;margin-top:6px;font-style:italic}
+.wsum{background:#111620;border:1px solid #1b222e;border-radius:13px;padding:13px;margin-bottom:9px}
+.wsum .wt{font-size:12px;font-weight:700;margin-bottom:3px}
+.wsum .ws{font-size:10.5px;color:#6b7280;margin-bottom:10px}
+.wsum .wpb{height:6px;background:#0b0f16;border-radius:3px;overflow:hidden;margin-bottom:9px}
+.wsum .wpb div{height:100%;background:#25d196;border-radius:3px}
+.wmg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.wmg div{background:#0b0f16;border-radius:8px;padding:7px 3px;text-align:center}
+.wmg b{font-size:12px;color:#25d196;display:block}
+.wmg span{font-size:8.5px;color:#6b7280}
+.ring2{width:26px;height:26px;flex-shrink:0}
+.ring2 svg{transform:rotate(-90deg)}
 </style>
 </head>
 <body>
@@ -199,7 +227,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 </div>
 
 <div id="pgWeek" class="hide">
-<div style="font-size:11px;color:#6b7280;margin-bottom:9px" id="wkHdr"></div>
+<div class="wsum" id="wkSummary"></div>
 <div id="weekPlan"></div>
 </div>
 
@@ -211,9 +239,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="st2"><span>To 70 kg</span><b id="dRem">—</b></div>
 <div class="st2"><span>Rate / week</span><b id="dRate">—</b></div>
 <div class="st2"><span>Projected 70 kg</span><b id="dProj">—</b></div></div></div>
+
+<div class="sec open"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">🔎</span><span class="st">What your data says</span><span class="sa">▾</span></div>
+<div class="sb"><div id="findList"></div></div></div>
+
 <div class="sec open"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">📉</span><span class="st">Weight Trend</span><span class="sa">▾</span></div>
 <div class="sb"><div class="chartwrap"><canvas id="chart"></canvas></div></div></div>
-<div class="sec open"><div class="sh"><span class="si">✅</span><span class="st">Last 7 days</span></div>
+
+<div class="sec open"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">📊</span><span class="st">Volume by muscle · 14d</span><span class="sa">▾</span></div>
+<div class="sb"><div id="volList"></div>
+<div style="font-size:10px;color:#4a5262;margin-top:8px;line-height:1.5">Sets actually completed, not planned. The focus rotation deliberately spikes one muscle each week.</div></div></div>
+
+<div class="sec open"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">✅</span><span class="st">Last 7 days</span><span class="sa">▾</span></div>
 <div class="sb"><div class="st2"><span>Avg protein</span><b id="dProt">—</b></div>
 <div class="st2"><span>Days at 150g</span><b id="dProtD">—</b></div>
 <div class="st2"><span>Avg steps</span><b id="dStep">—</b></div>
@@ -223,16 +260,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="st2"><span>Gym days</span><b id="dSw">—</b></div>
 <div class="st2"><span>Core sessions</span><b id="dCore">—</b></div>
 <div class="chartwrap" style="height:110px"><canvas id="protChart"></canvas></div></div></div>
-<div class="sec"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">🗒️</span><span class="st">Notes</span><span class="sa">▾</span></div>
-<div class="sb"><div id="noteLog" style="font-size:12px;color:#8a94a6"></div></div></div>
+
+<div class="sec open"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">📋</span><span class="st">Session history</span><span class="sc" id="shCount">—</span><span class="sa">▾</span></div>
+<div class="sb"><div id="histList"></div></div></div>
+
 <div class="sec"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">💾</span><span class="st">Backup</span><span class="sa">▾</span></div>
 <div class="sb"><button class="b" onclick="exportData()">Copy my data</button><div class="msg" id="bkMsg">Paste into Notes monthly.</div></div></div>
 </div>
 
 <div id="pgLearn" class="hide">
-<div class="sec open"><div class="sh"><span class="si">🗓️</span><span class="st">The structure</span></div>
+<div class="sec open"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">🔎</span><span class="st">Findings from your data</span><span class="sa">▾</span></div>
+<div class="sb"><div id="learnFind"></div></div></div>
+<div class="sec"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">🗓️</span><span class="st">The structure</span><span class="sa">▾</span></div>
 <div class="sb"><div style="font-size:12px;color:#8a94a6;line-height:1.65" id="cycExp"></div></div></div>
-<div class="sec open"><div class="sh"><span class="si">💡</span><span class="st">Why this works</span></div>
+<div class="sec open"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">🧠</span><span class="st">The mechanisms</span><span class="sa">▾</span></div>
 <div class="sb"><div id="learnList"></div></div></div>
 </div>
 
@@ -363,6 +404,37 @@ const TRIVIA=[
 ['0.5-0.7 kg a week is the band','Faster and a growing share of the loss is muscle, not fat.'],
 ['Alcohol pauses fat burning','The liver clears alcohol before everything else, and it raises TG production.'],
 ['Strength holding = muscle holding','Lifts flat or climbing while the scale drops means the loss is fat.']];
+const DEEP=[
+['Why your triglycerides sit at 431 and what actually moves them',
+'TG is made in the liver from surplus carbohydrate, and fructose in particular bypasses the normal regulatory step, so it converts to fat almost unchecked. That is why sugar and jaggery matter more than the oil in your sambar. Reduction of 20-40% from diet and exercise alone is common at your level, but it takes 8-12 weeks to show, which is why the repeat panel is scheduled and not immediate.'],
+['Stage 1 fatty liver is the reversible one',
+'Fat accumulates in liver cells before any scarring occurs. At stage 1 there is no fibrosis, so the damage is not structural yet. Weight loss of 7-10% is repeatedly enough to clear a meaningful share of it. For you that is 5.5-8 kg. This is the single best reason your target is 70 rather than a vaguer goal.'],
+['Insulin resistance is a muscle problem before it is a pancreas problem',
+'Muscle takes up most of the glucose in your bloodstream. When muscle cells stop responding to insulin, the pancreas compensates by producing more, and that elevated insulin blocks fat release. Resistance training reopens a separate glucose channel (GLUT4) that works without insulin at all. This is why lifting matters for your labs and not just your shape.'],
+['Why 150g protein and not 100g',
+'Below roughly 1.6g per kg of bodyweight, muscle loss during a deficit rises steeply. At your 79 kg that floor is 126g, and 150g gives margin for imperfect days. Protein also costs 20-30% of its own calories to digest, versus 5-10% for carbs, so 150g of protein nets you fewer usable calories than the label says.'],
+['The deficit maths that explains your 79 kg',
+'Your BMR is 1577 and your realistic expenditure lands near 2400. A 500 kcal deficit means about 1900 kcal. Three rice servings at lunch alone can reach 700. Two beers plus roasted chicken is 600-800. Neither feels like overeating in the moment, and together they erase the entire deficit before you have eaten breakfast.'],
+['Why the scale lies for the first three weeks',
+'Each gram of stored glycogen holds 3-4 grams of water. Starting training increases glycogen storage and muscle inflammation, both of which add water weight while fat is genuinely being lost underneath. This is why the waist tape and the 7-day average are better instruments than any single morning weight.'],
+['Spot reduction does not exist, and here is why',
+'Fat is mobilised via hormone-sensitive lipase acting on fat cells system-wide, not locally by the muscle being worked. Ab training raises the demand on abdominal muscle, not on the fat sitting over it. Where you lose from first is genetic. For you, with a 0.94 waist-hip ratio, the trunk is where most of the fat is, so trunk is where most of the loss will show.'],
+['Alcohol does not just add calories, it pauses everything else',
+'The liver has no storage mechanism for ethanol, so it prioritises clearing it over all other metabolism. Fat oxidation halts for several hours, and the byproducts feed directly into triglyceride synthesis. At TG 431 this is the one item on your list with a mechanism that specifically targets your worst marker.'],
+['Zone 2 versus intervals, decided by recovery cost',
+'Both improve fitness. Zone 2 does it at a fraction of the recovery expense, which means you can do far more of it per week without stealing from lifting or sleep. Total weekly aerobic volume above 180 minutes is what shifts liver fat in the trials. Intervals are efficient per minute but expensive per session, and your recovery budget is already stretched.'],
+['Sleep is not a soft variable for fat loss',
+'Under 7 hours raises ghrelin and lowers leptin, meaning you feel hungrier at the same food intake. It also reduces the proportion of weight lost that comes from fat rather than muscle. Your recent shift to 8 hours is doing quiet, real work in the background.'],
+['Why the focus rotation preserves rather than builds',
+'Muscle growth needs a calorie surplus for the raw material. In a deficit, high-volume training acts as a retention signal instead: it tells the body this tissue is in use and should not be catabolised for energy. You are not wasting the Monday session. You are protecting your 31.4 kg of skeletal muscle.'],
+['Steps beat the treadmill for total burn',
+'A structured 30-minute cardio session might cost 250 kcal. The difference between a 3,000-step day and a 10,000-step day is 300-500 kcal, and it repeats every single day without recovery cost. For a desk job this is the largest under-used lever available to you.'],
+['Rotational power transfers to batting more than raw strength does',
+'Hard hitting is a sequencing skill: hips fire, then trunk, then arms. Med ball throws and cable woodchops train that sequence under load in a way that bench press and squats do not. It is why they sit in the plan despite contributing nothing to fat loss.'],
+['What the 8-12 week bloodwork will actually tell you',
+'TG responds fastest, often within weeks. HDL moves slowly and mostly through sustained exercise. Liver enzymes track the liver fat itself. If TG has dropped meaningfully but HDL has not, that is normal and not a failure. If nothing has moved, the honest first suspect is alcohol frequency, then total intake.'],
+['Why strength holding is the real success metric',
+'If your lifts stay flat or climb while the scale drops, the weight leaving is fat and the muscle is intact. If lifts fall across two consecutive weeks alongside the scale, you are cutting too hard and the answer is to add 100-150 kcal back, not to train more.']];
 const KEY='raghul-forge-v4',CYCLE_START='2026-07-27',PT=150,ST=10000,SL=7.5;
 let S={w:{'2026-08-03':77.25},d:{},cardio:{},stretch:{},notes:{},added:{},swaps:{},skipped:{},prot:{},steps:{},sleep:{}};
 try{let raw=localStorage.getItem(KEY)||localStorage.getItem('raghul-forge-v3')||localStorage.getItem('raghul-forge-v2')||localStorage.getItem('raghul-forge-v1');
@@ -598,28 +670,53 @@ d.innerHTML=f.ic+'<br>W'+(i+1);r.appendChild(d);});}
 function renderWeekPlan(){
 const n=new Date(cur+'T12:00:00'),m=new Date(n);m.setDate(n.getDate()-((n.getDay()+6)%7));
 const f=focusOf(cur);
-document.getElementById('wkHdr').innerHTML='Week of '+m.toLocaleDateString('en-IN',{day:'numeric',month:'short'})+
-' · cycle week '+(weekIdx(cur)+1)+' · focus <b style="color:#f0b429">'+f.t+'</b> · tap a day to expand, tap the name to jump there';
-const box=document.getElementById('weekPlan');box.innerHTML='';
 const GN={chest:'CHEST',tri:'TRICEPS',shoulder:'SHOULDERS',bi:'BICEPS',back:'BACK/LATS',legs:'LEGS',core:'CORE',cardio:'CARDIO'};
+let totP=0,totD=0,gymP=0,gymD=0,setsP=0,setsD=0,coreS=0;
+const days=[];
 for(let i=0;i<7;i++){const d=new Date(m);d.setDate(m.getDate()+i);
-const k=iso(d),dd=d.getDay(),b=baseFor(k,dd),list=dayList(k,dd);
-const done=(S.d[k]||[]).length;
+const k=iso(d),dw=d.getDay(),b=baseFor(k,dw),list=dayList(k,dw),done=S.d[k]||[];
+const dn=list.filter(x=>done.includes(x.id));
+totP+=list.length;totD+=dn.length;
+if(b.gym){gymP++;if(dn.length)gymD++;}
+list.forEach(x=>{setsP+=setsOf(x.r);});
+dn.forEach(x=>{setsD+=setsOf(x.r);if(x.m==='core')coreS+=setsOf(x.r);});
+days.push({k,dw,b,list,dn,pct:list.length?Math.round(dn.length/list.length*100):0});}
+const wpct=totP?Math.round(totD/totP*100):0;
+document.getElementById('wkSummary').innerHTML=
+'<div class="wt">Week of '+m.toLocaleDateString('en-IN',{day:'numeric',month:'short'})+' \u00b7 focus <span style="color:#f0b429">'+f.t+'</span></div>'+
+'<div class="ws">'+totD+' of '+totP+' movements done \u00b7 '+setsD+' of '+setsP+' sets</div>'+
+'<div class="wpb"><div style="width:'+wpct+'%"></div></div>'+
+'<div class="wmg"><div><b>'+gymD+'/'+gymP+'</b><span>GYM DAYS</span></div>'+
+'<div><b>'+wpct+'%</b><span>COMPLETE</span></div>'+
+'<div><b>'+coreS+'</b><span>CORE SETS</span></div>'+
+'<div><b>'+wkCardio()+'</b><span>CARDIO MIN</span></div></div>';
+const box=document.getElementById('weekPlan');box.innerHTML='';
+days.forEach(x=>{
 const c=document.createElement('div');
-c.className='wcard'+(b.focus?' focus':'')+(k===tk()?' today':'')+(k===cur?' open':'');
-const gy=b.gym?'':' · rest';
-c.innerHTML='<div class="wch"><div class="wdy">'+DN[dd].toUpperCase()+'</div><div class="wnm">'+b.icon+' '+b.name+'</div>'+
-'<div class="wct">'+(k>tk()?list.length+' planned':done+'/'+list.length)+'</div></div><div class="wcb"></div>';
+c.className='wcard'+(x.b.focus?' focus':'')+(x.k===tk()?' today':'')+(x.k===cur?' open':'');
+const col=x.pct>=100?'#25d196':x.pct>0?'#f0b429':'#39404f';
+const circ=2*Math.PI*10;
+c.innerHTML='<div class="wch"><div class="wdy">'+DN[x.dw].toUpperCase()+'</div>'+
+'<div class="wnm">'+x.b.icon+' '+x.b.name+'</div>'+
+(x.k>tk()?'<div class="wct">'+x.list.length+' planned</div>':
+'<div class="ring2"><svg width="26" height="26"><circle cx="13" cy="13" r="10" stroke="#1b222e" stroke-width="3" fill="none"/>'+
+'<circle cx="13" cy="13" r="10" stroke="'+col+'" stroke-width="3" fill="none" stroke-linecap="round" stroke-dasharray="'+circ+'" stroke-dashoffset="'+(circ-circ*x.pct/100)+'"/></svg></div>')+
+'</div><div class="wcb"></div>';
 c.querySelector('.wch').onclick=()=>c.classList.toggle('open');
-c.querySelector('.wnm').onclick=e=>{e.stopPropagation();cur=k;go('Home');render();};
+c.querySelector('.wnm').onclick=e=>{e.stopPropagation();cur=x.k;go('Home');render();};
 const body=c.querySelector('.wcb');
+const mv={};x.list.forEach(it=>{mv[it.m]=(mv[it.m]||0)+setsOf(it.r);});
+const chips=Object.keys(mv).filter(k=>mv[k]).map(k=>(GN[k]||k)+' '+mv[k]).join(' \u00b7 ');
+if(chips){const sm=document.createElement('div');sm.style.cssText='font-size:9.5px;color:#4a5262;margin-bottom:6px;letter-spacing:.3px';
+sm.textContent=chips+' sets';body.appendChild(sm);}
 let lm=null;
-list.forEach(it=>{
+x.list.forEach(it=>{
 if(it.m&&it.m!==lm){lm=it.m;const g=document.createElement('div');g.className='wgh';g.textContent=GN[it.m]||'';body.appendChild(g);}
+const done=x.dn.some(y=>y.id===it.id);
 const r=document.createElement('div');r.className='wex';
-r.innerHTML='<span>'+it.n+'</span><span>'+it.r+'</span>';body.appendChild(r);});
-box.appendChild(c);}}
-
+r.innerHTML='<span style="color:'+(done?'#7ee2bb':'#8a94a6')+'">'+(done?'\u2713 ':'')+it.n+'</span><span>'+it.r+'</span>';
+body.appendChild(r);});
+box.appendChild(c);});}
 function markAll(){S.d[cur]=dayList(cur,cdow()).map(x=>x.id);P();render();}
 function markCore(){S.stretch[cur]=STRETCH.filter(x=>x[1]===1).map(x=>x[0]);P();render();}
 function saveW(){const v=parseFloat(document.getElementById('wIn').value);
@@ -668,24 +765,98 @@ if(!f)b.innerHTML='<div class="emp">Nothing available to move.</div>';
 document.getElementById('moveModal').className='modal';}
 function closeMove(){document.getElementById('moveModal').className='modal hide';}
 
+function allEx(){const o=[];
+FOCUS.forEach((f,fi)=>f.ex.forEach((e,i)=>o.push({e,src:'F'+fi,idx:i,label:f.t})));
+Object.keys(DAY).forEach(dw=>DAY[dw].ex.forEach((e,i)=>o.push({e,src:'D'+dw,idx:i,label:DAY[dw].n})));
+return o;}
+function findUpcoming(word){
+for(let i=1;i<=21;i++){const d=new Date(cur+'T12:00:00');d.setDate(d.getDate()+i);
+const k=iso(d),dw=d.getDay(),sw=S.swaps[k]||{},bb=baseFor(k,dw);
+for(let idx=0;idx<bb.ex.length;idx++){const e=bb.ex[idx],id=dw+'-'+idx;
+if(sw[id])continue;
+if(e[2].some(w=>word.includes(w)))return{e,k,dw,id,idx};}}
+return null;}
 function saveSession(){
 const txt=document.getElementById('noteBox').value;S.notes[cur]=txt.trim();
-const low=txt.toLowerCase();let pull=[];
-if(low.length>2){for(let i=1;i<=6;i++){const d=new Date(cur+'T12:00:00');d.setDate(d.getDate()+i);
-const k=iso(d),dw=d.getDay(),sw=S.swaps[k]||{},bb=baseFor(k,dw);
-bb.ex.forEach((e,idx)=>{const id=dw+'-'+idx;
-if(sw[id])return;if(!e[2].some(w=>low.includes(w)))return;
-if((S.added[cur]||[]).some(x=>x.n===e[0]))return;
-const a=S.added[cur]||[],nid='p-'+id+'-'+Date.now()+'-'+idx;
-a.push({n:e[0],r:e[1],id:nid,from:DN[dw],m:e[4]});S.added[cur]=a;
+const low=txt.toLowerCase();let pull=[],extra=[];
+if(low.length>2){
+const list=dayList(cur,cdow());
+const seen=new Set();
+allEx().forEach(({e})=>{
+if(seen.has(e[0]))return;
+if(!e[2].some(w=>low.includes(w)))return;
+seen.add(e[0]);
+if(list.some(x=>x.n===e[0]))return;
+const up=findUpcoming(low);
+const hit=up&&up.e[0]===e[0]?up:null;
+const a=S.added[cur]||[],nid='p-'+Date.now()+'-'+Math.random().toString(36).slice(2,6);
+a.push({n:e[0],r:e[1],id:nid,from:hit?DN[hit.dw]:'logged',late:1,m:e[4]});S.added[cur]=a;
 const dd=S.d[cur]||[];dd.push(nid);S.d[cur]=dd;
-sw[id]=e[3];S.swaps[k]=sw;pull.push(e[0]+' → '+DN[dw]+' now '+e[3]);});}}
+if(hit){const sw=S.swaps[hit.k]||{};sw[hit.id]=hit.e[3];S.swaps[hit.k]=sw;
+pull.push(e[0]+' \u2192 '+DN[hit.dw]+' now '+hit.e[3]);}
+else extra.push(e[0]);});}
 P();render();
 const done=(S.d[cur]||[]).length,t=dayList(cur,cdow()).length;
-let m='Saved · '+done+'/'+t+' done · '+cMin(cur)+' min cardio · '+(S.prot[cur]||0)+'g protein';
+let m='Saved \u00b7 '+done+'/'+t+' done \u00b7 '+cMin(cur)+' min cardio \u00b7 '+(S.prot[cur]||0)+'g protein';
+if(extra.length)m+='<br>Added &amp; ticked: '+extra.join(', ');
 if(pull.length)m+='<br>Adapted: '+pull.join('; ');
 document.getElementById('exMsg').innerHTML=m;}
-
+function setsOf(r){if(!r)return 0;const m=String(r).match(/^(\d+)\s*[x\u00d7]/i);if(m)return +m[1];
+if(/^\d+\s*sets?/i.test(r))return +r.match(/^(\d+)/)[1];
+if(/^[x\u00d7]/i.test(r))return 2;return 0;}
+function volume(days){const v={};for(let i=0;i<days;i++){const d=new Date();d.setDate(d.getDate()-i);
+const k=iso(d),dw=d.getDay(),done=S.d[k]||[];
+dayList(k,dw).forEach(x=>{if(!done.includes(x.id))return;
+const st=setsOf(x.r);if(!st)return;v[x.m]=(v[x.m]||0)+st;});}return v;}
+function sessionHistory(n){const o=[];for(let i=0;i<n;i++){const d=new Date();d.setDate(d.getDate()-i);
+const k=iso(d),dw=d.getDay(),done=S.d[k]||[];if(!done.length)continue;
+const list=dayList(k,dw).filter(x=>done.includes(x.id));
+o.push({k,dw,b:baseFor(k,dw),list,cardio:cMin(k),prot:S.prot[k]||0,sleep:S.sleep[k]||0,steps:S.steps[k]||0,note:S.notes[k]||''});}
+return o;}
+function findings(){
+const F=[],l14=[];for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);l14.push(iso(d));}
+const pv=l14.map(k=>S.prot[k]||0),zv=l14.map(k=>S.sleep[k]||0),sv=l14.map(k=>S.steps[k]||0);
+const trained=l14.map(k=>(S.d[k]||[]).length>0);
+const pn=pv.filter(x=>x>0),zn=zv.filter(x=>x>0);
+if(pn.length>=4){const hi=[],lo=[];
+l14.forEach((k,i)=>{if(!pv[i])return;(pv[i]>=130?hi:lo).push(i);});
+if(hi.length>=2&&lo.length>=2){
+const tr=a=>a.filter(i=>trained[i]).length/a.length*100;
+const dh=Math.round(tr(hi)),dl=Math.round(tr(lo));
+if(Math.abs(dh-dl)>=20)F.push(['Protein tracks training',
+'On days you hit 130g+ you trained '+dh+'% of the time, versus '+dl+'% on lower-protein days. Same person, same week \u2014 the eating and the showing up move together.']);}}
+if(zn.length>=4){const g=[],b=[];
+l14.forEach((k,i)=>{if(!zv[i])return;(zv[i]>=7?g:b).push(i);});
+if(g.length>=2&&b.length>=2){
+const av=a=>Math.round(a.reduce((x,i)=>x+pv[i],0)/a.length);
+if(av(g)-av(b)>=15)F.push(['Sleep is driving your appetite control',
+'After 7h+ nights you averaged '+av(g)+'g protein; after shorter nights '+av(b)+'g. Short sleep is pushing you toward carbs, exactly as the hormone story predicts.']);}}
+const dayHit={};l14.forEach((k,i)=>{const dw=new Date(k+'T12:00:00').getDay();
+if(!dayHit[dw])dayHit[dw]={t:0,n:0};dayHit[dw].n++;if(trained[i])dayHit[dw].t++;});
+let worst=null;Object.keys(dayHit).forEach(dw=>{const h=dayHit[dw];
+if(h.n>=2&&baseFor(tk(),+dw).gym&&(worst===null||h.t/h.n<worst.r))worst={dw:+dw,r:h.t/h.n,h};});
+if(worst&&worst.r<0.5)F.push([DN[worst.dw]+' is your weak link',
+'You have logged '+worst.h.t+' of '+worst.h.n+' '+DN[worst.dw]+'s. It is a gym day. If something has to give it should be a rest day, not this one.']);
+const v=volume(14);const tot=Object.values(v).reduce((a,b)=>a+b,0);
+if(tot>20){const names={chest:'chest',back:'back',legs:'legs',shoulder:'shoulders',bi:'biceps',tri:'triceps',core:'core'};
+const arr=Object.keys(v).filter(k=>names[k]).map(k=>[k,v[k]]).sort((a,b)=>b[1]-a[1]);
+if(arr.length>=3){const lowest=arr[arr.length-1];
+F.push(['Volume is leaning '+names[arr[0][0]],
+'Last 14 days: '+arr.slice(0,3).map(x=>names[x[0]]+' '+x[1]).join(', ')+' sets, with '+names[lowest[0]]+' lowest at '+lowest[1]+'. The focus rotation will even this out over 4 weeks \u2014 worth a glance, not a worry.']);}}
+const wd=Object.keys(S.w).sort();
+if(wd.length>=6){const r=rate();
+if(r!==null&&pn.length>=4){const pa=Math.round(pn.reduce((a,b)=>a+b,0)/pn.length);
+if(r<0.2&&pa<130)F.push(['The two numbers that explain the stall',
+'Weight is moving '+r.toFixed(2)+' kg/week and protein is averaging '+pa+'g. Neither is where it needs to be, and they are the same problem \u2014 low protein means more of the plate is rice, and more rice means no deficit.']);
+else if(r>=0.3&&pa>=130)F.push(['This is what working looks like',
+r.toFixed(2)+' kg/week with '+pa+'g protein. That combination is fat coming off with muscle staying on. Keep both where they are.']);}}
+const sn=sv.filter(x=>x>0);
+if(sn.length>=4){const sa=Math.round(sn.reduce((a,b)=>a+b,0)/sn.length);
+if(sa<7000)F.push(['Steps are the cheapest lever left',
+'Averaging '+sa.toLocaleString('en-IN')+' a day. Getting to 10k is worth roughly 250-400 kcal daily without a single extra gym session \u2014 more than the sessions you are worried about missing.']);}
+if(!F.length)F.push(['Not enough data yet',
+'Log protein, sleep and steps for about a week and this page starts finding patterns in your own numbers rather than telling you general facts.']);
+return F;}
 function renderStats(){
 const dates=Object.keys(S.w).sort(),a=avg7(),sw=startW(),r=rate(),l7=last7();
 document.getElementById('dStart').textContent=sw.toFixed(2)+' kg';
@@ -711,11 +882,7 @@ ze.className=zn.length&&zn.reduce((x,y)=>x+y,0)/zn.length<6.5?'a':'';
 document.getElementById('dCw').textContent=wkCardio()+' min';
 document.getElementById('dSw').textContent=wkGym()+' / 4';
 document.getElementById('dCore').textContent=coreDays()+' / 7';
-const nl=document.getElementById('noteLog');nl.innerHTML='';
-Object.keys(S.notes).sort().reverse().slice(0,7).forEach(k=>{if(!S.notes[k])return;
-const p=document.createElement('div');p.style.cssText='padding:7px 0;border-bottom:1px solid #1b222e';
-p.innerHTML='<span style="color:#25d196">'+k.slice(5)+'</span> · '+S.notes[k];nl.appendChild(p);});
-if(!nl.innerHTML)nl.innerHTML='<div class="emp">No notes yet.</div>';
+renderFindings();renderVolume();renderHistory();
 if(typeof Chart==='undefined')return;
 if(ch)ch.destroy();
 ch=new Chart(document.getElementById('chart'),{type:'line',
@@ -726,6 +893,36 @@ pch=new Chart(document.getElementById('protChart'),{type:'bar',
 data:{labels:l7.map(k=>k.slice(8)),datasets:[{data:pv,backgroundColor:pv.map(x=>x>=PT?'#25d196':x>0?'#f0b429':'#1b222e'),borderRadius:3}]},
 options:{plugins:{legend:{display:false}},scales:{y:{ticks:{color:'#6b7280',callback:v=>v+'g'},grid:{color:'#1b222e'}},x:{ticks:{color:'#6b7280'},grid:{display:false}}},maintainAspectRatio:false}});}
 
+function renderFindings(){
+const el=document.getElementById('findList');if(!el)return;el.innerHTML='';
+findings().forEach(([t,b])=>{const d=document.createElement('div');d.className='find';
+d.innerHTML='<b>'+t+'</b><span>'+b+'</span>';el.appendChild(d);});}
+function renderVolume(){
+const el=document.getElementById('volList');if(!el)return;el.innerHTML='';
+const v=volume(14);const N={chest:'Chest',back:'Back',legs:'Legs',shoulder:'Shoulders',bi:'Biceps',tri:'Triceps',core:'Core'};
+const arr=Object.keys(N).map(k=>[k,v[k]||0]).sort((a,b)=>b[1]-a[1]);
+const mx=Math.max(1,...arr.map(x=>x[1]));
+arr.forEach(([k,n])=>{const d=document.createElement('div');d.className='vrow';
+d.innerHTML='<div class="vn">'+N[k]+'</div><div class="vb"><div style="width:'+(n/mx*100)+'%"></div></div><div class="vv">'+n+'</div>';
+el.appendChild(d);});}
+function renderHistory(){
+const el=document.getElementById('histList');if(!el)return;el.innerHTML='';
+const h=sessionHistory(30);
+const c=document.getElementById('shCount');if(c)c.textContent=h.length+' logged';
+if(!h.length){el.innerHTML='<div class="emp">No sessions logged yet.</div>';return;}
+h.slice(0,14).forEach(x=>{const d=document.createElement('div');d.className='hrow';
+const meta=[x.list.length+' exercises'];
+if(x.cardio)meta.push(x.cardio+' min');
+if(x.prot)meta.push(x.prot+'g');
+if(x.sleep)meta.push(x.sleep+'h');
+d.innerHTML='<div class="hh"><div><div class="hd2">'+x.b.icon+' '+DN[x.dw]+' '+x.k.slice(5)+' \u00b7 '+x.b.name+'</div>'+
+'<div class="hm">'+meta.join(' \u00b7 ')+'</div></div><div class="hm">\u25be</div></div><div class="hb"></div>';
+const body=d.querySelector('.hb');
+x.list.forEach(e=>{const r=document.createElement('div');r.className='he';
+r.innerHTML='<span>'+e.n+'</span><span>'+e.r+'</span>';body.appendChild(r);});
+if(x.note){const nn=document.createElement('div');nn.className='hnote';nn.textContent='\u201c'+x.note+'\u201d';body.appendChild(nn);}
+d.onclick=()=>d.classList.toggle('open');
+el.appendChild(d);});}
 function renderLearn(){
 const w=weekIdx(cur);
 document.getElementById('cycExp').innerHTML=
@@ -737,10 +934,13 @@ FOCUS.map((f,i)=>'&nbsp;&nbsp;'+f.ic+' <span style="color:'+(i===w?'#f0b429':'#c
 '<b style="color:#8a94a6">Tue / Thu — Active rest</b><br>30 min cardio, stretching, core mini-block.<br><br>'+
 '<b style="color:#8a94a6">Sun — Recovery</b><br>Long walk and full stretch.<br><br>'+
 'On the week a muscle is the focus, it auto-drops to one movement on Wed and Fri so Monday stays the hard session. Core never deloads — it runs every day.';
+const fl=document.getElementById('learnFind');
+if(fl){fl.innerHTML='';findings().forEach(([t,b])=>{const d=document.createElement('div');d.className='find';
+d.innerHTML='<b>'+t+'</b><span>'+b+'</span>';fl.appendChild(d);});}
 const el=document.getElementById('learnList');el.innerHTML='';
-TRIVIA.forEach(([t,b])=>{const d=document.createElement('div');
-d.style.cssText='padding:11px 0;border-bottom:1px solid #1b222e';
-d.innerHTML='<div style="font-size:12.5px;font-weight:600;color:#25d196;margin-bottom:3px">'+t+'</div><div style="font-size:12px;color:#8a94a6;line-height:1.55">'+b+'</div>';
+DEEP.forEach(([t,b])=>{const d=document.createElement('div');
+d.style.cssText='padding:12px 0;border-bottom:1px solid #1b222e';
+d.innerHTML='<div style="font-size:12.5px;font-weight:600;color:#25d196;margin-bottom:4px">'+t+'</div><div style="font-size:11.5px;color:#8a94a6;line-height:1.6">'+b+'</div>';
 el.appendChild(d);});}
 function exportData(){const t='FORGE BACKUP '+tk()+'\n'+JSON.stringify(S);
 if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>{document.getElementById('bkMsg').textContent='Copied.';});

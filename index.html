@@ -154,6 +154,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .wmg div{background:#0b0f16;border-radius:8px;padding:7px 3px;text-align:center}
 .wmg b{font-size:12px;color:#25d196;display:block}
 .wmg span{font-size:8.5px;color:#6b7280}
+.bkn{background:#241a10;border:1px solid #4a3316;border-radius:11px;padding:11px 12px;margin-bottom:9px;font-size:12px;color:#e2c98a;line-height:1.5}
+.bkn b{color:#f0b429;display:block;font-size:11px;margin-bottom:3px}
+.bkn .bkr{display:flex;gap:6px;margin-top:8px}
+.bkn button{flex:1;background:#f0b429;color:#241a10;border:none;border-radius:7px;padding:8px;font-size:11px;font-weight:700}
+.bkn button.alt{background:#3a2f18;color:#e2c98a}
+.bok{font-size:10px;color:#4a5262;margin-top:6px}
 .ring2{width:26px;height:26px;flex-shrink:0}
 .ring2 svg{transform:rotate(-90deg)}
 </style>
@@ -187,6 +193,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="tc" id="tcZ" onclick="openLog('slIn')"><i>😴</i><div class="tv"><b id="vZ">—</b><span>sleep / 7.5h</span><div class="bar"><div id="bZ" style="width:0"></div></div></div></div>
 </div>
 
+<div id="bkNudge"></div>
 <div id="nudgeBox"></div>
 
 <div class="insight" id="insight"><span class="il">INSIGHT</span><span id="insText">Log today's weight to start.</span></div>
@@ -264,8 +271,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="sec open"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">📋</span><span class="st">Session history</span><span class="sc" id="shCount">—</span><span class="sa">▾</span></div>
 <div class="sb"><div id="histList"></div></div></div>
 
-<div class="sec"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">💾</span><span class="st">Backup</span><span class="sa">▾</span></div>
-<div class="sb"><button class="b" onclick="exportData()">Copy my data</button><div class="msg" id="bkMsg">Paste into Notes monthly.</div></div></div>
+<div class="sec open"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">💾</span><span class="st">Backup &amp; Restore</span><span class="sc" id="bkAge">—</span><span class="sa">▾</span></div>
+<div class="sb">
+<div style="font-size:11px;color:#8a94a6;line-height:1.6;margin-bottom:9px">Your data lives only in Safari on this phone. Clearing Safari website data erases it. Saving a file puts a copy in your Files app where a Safari wipe cannot reach it.</div>
+<button class="b pri" onclick="downloadBackup()">⬇ Save backup file to Files</button>
+<button class="b" onclick="exportData()">Copy backup as text</button>
+<div class="msg" id="bkMsg"></div>
+<div class="lbl">RESTORE</div>
+<textarea class="ipt" id="restoreBox" rows="3" placeholder="Paste a backup here (text or file contents)"></textarea>
+<div class="row3"><button class="b" style="margin:0" onclick="doRestore(0)">Merge in</button><button class="b" style="margin:0" onclick="doRestore(1)">Replace all</button></div>
+<div class="msg" id="rsMsg"></div>
+<div class="bok">Merge keeps what is already here and fills gaps. Replace wipes current data and uses the backup exactly.</div>
+</div></div>
 </div>
 
 <div id="pgLearn" class="hide">
@@ -440,7 +457,7 @@ let S={w:{'2026-08-03':77.25},d:{},cardio:{},stretch:{},notes:{},added:{},swaps:
 try{let raw=localStorage.getItem(KEY)||localStorage.getItem('raghul-forge-v3')||localStorage.getItem('raghul-forge-v2')||localStorage.getItem('raghul-forge-v1');
 if(raw){const p=JSON.parse(raw);S={...S,...p};}
 if(!S.w['2026-08-03'])S.w['2026-08-03']=77.25;
-['d','cardio','stretch','notes','added','swaps','skipped','prot','steps','sleep'].forEach(k=>{if(!S[k])S[k]={};});}catch(e){}
+['d','cardio','stretch','notes','added','swaps','skipped','prot','steps','sleep'].forEach(k=>{if(!S[k])S[k]={};});if(!S.meta)S.meta={};}catch(e){}
 const P=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}};
 const iso=d=>d.toISOString().slice(0,10);
 const tk=()=>iso(new Date());
@@ -590,7 +607,7 @@ document.getElementById('tcP').classList.toggle('hit',pr>=PT);
 document.getElementById('tcS').classList.toggle('hit',stp>=ST);
 document.getElementById('tcC').classList.toggle('hit',cd>=25);
 document.getElementById('tcZ').classList.toggle('hit',sl>=7);
-renderEx();renderCardio();renderStretch();renderWeek();renderCycRow();renderNudge();
+renderEx();renderCardio();renderStretch();renderWeek();renderCycRow();renderNudge();renderBkNudge();renderBkAge();
 document.getElementById('noteBox').value=S.notes[cur]||'';
 document.getElementById('wIn').value='';document.getElementById('pIn').value='';
 document.getElementById('stIn').value='';document.getElementById('slIn').value='';
@@ -882,7 +899,7 @@ ze.className=zn.length&&zn.reduce((x,y)=>x+y,0)/zn.length<6.5?'a':'';
 document.getElementById('dCw').textContent=wkCardio()+' min';
 document.getElementById('dSw').textContent=wkGym()+' / 4';
 document.getElementById('dCore').textContent=coreDays()+' / 7';
-renderFindings();renderVolume();renderHistory();
+renderFindings();renderVolume();renderHistory();renderBkAge();
 if(typeof Chart==='undefined')return;
 if(ch)ch.destroy();
 ch=new Chart(document.getElementById('chart'),{type:'line',
@@ -942,9 +959,56 @@ DEEP.forEach(([t,b])=>{const d=document.createElement('div');
 d.style.cssText='padding:12px 0;border-bottom:1px solid #1b222e';
 d.innerHTML='<div style="font-size:12.5px;font-weight:600;color:#25d196;margin-bottom:4px">'+t+'</div><div style="font-size:11.5px;color:#8a94a6;line-height:1.6">'+b+'</div>';
 el.appendChild(d);});}
-function exportData(){const t='FORGE BACKUP '+tk()+'\n'+JSON.stringify(S);
-if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>{document.getElementById('bkMsg').textContent='Copied.';});
-else prompt('Copy:',t);}
+function bkPayload(){return JSON.stringify({v:4,saved:tk(),data:S});}
+function markBacked(){S.meta=S.meta||{};S.meta.lastBackup=tk();P();renderBkAge();renderBkNudge();}
+function daysSinceBackup(){const lb=(S.meta||{}).lastBackup;if(!lb)return 999;
+return Math.round((new Date(tk()+'T12:00:00')-new Date(lb+'T12:00:00'))/864e5);}
+function renderBkAge(){const e=document.getElementById('bkAge');if(!e)return;
+const d=daysSinceBackup();e.textContent=d>900?'never':d===0?'today':d+'d ago';
+e.style.color=d>=7?'#f0b429':'#25d196';e.style.background=d>=7?'#2b2312':'#12291f';}
+function downloadBackup(){
+try{const blob=new Blob([bkPayload()],{type:'application/json'});
+const url=URL.createObjectURL(blob);const a=document.createElement('a');
+a.href=url;a.download='forge-backup-'+tk()+'.json';
+document.body.appendChild(a);a.click();document.body.removeChild(a);
+setTimeout(()=>URL.revokeObjectURL(url),1000);
+markBacked();
+const m=document.getElementById('bkMsg');if(m)m.textContent='Saved. Choose Save to Files \u2192 iCloud Drive so it survives a Safari wipe.';}
+catch(e){const m=document.getElementById('bkMsg');if(m)m.textContent='Download blocked \u2014 use Copy backup as text instead.';}}
+function exportData(){const t=bkPayload();
+if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(()=>{
+markBacked();const m=document.getElementById('bkMsg');if(m)m.textContent='Copied. Paste into Notes or WhatsApp to yourself.';})
+.catch(()=>prompt('Copy this:',t));
+else{prompt('Copy this:',t);markBacked();}}
+function doRestore(replace){
+const el=document.getElementById('restoreBox'),msg=document.getElementById('rsMsg');
+let raw=(el.value||'').trim();
+if(!raw){msg.textContent='Paste a backup first.';return;}
+raw=raw.replace(/^FORGE BACKUP[^\n]*\n/,'').trim();
+let inc;
+try{const o=JSON.parse(raw);inc=o&&o.data?o.data:o;}
+catch(e){msg.style.color='#e08a8a';msg.textContent='That does not look like a backup. Paste the whole thing including the braces.';return;}
+if(!inc||typeof inc!=='object'||(!inc.w&&!inc.d)){msg.style.color='#e08a8a';msg.textContent='Backup looks empty or in an old format.';return;}
+const FIELDS=['w','d','cardio','stretch','notes','added','swaps','skipped','prot','steps','sleep'];
+let n=0;
+if(replace){const fresh={};FIELDS.forEach(f=>{fresh[f]=inc[f]||{};n+=Object.keys(fresh[f]).length;});
+fresh.meta=inc.meta||{};S=fresh;}
+else{FIELDS.forEach(f=>{S[f]=S[f]||{};const src=inc[f]||{};
+Object.keys(src).forEach(k=>{if(S[f][k]===undefined){S[f][k]=src[k];n++;}});});}
+P();el.value='';
+msg.style.color='#7ee2bb';
+msg.textContent=(replace?'Replaced with backup \u2014 ':'Merged \u2014 ')+n+' entries now in place.';
+renderBkAge();render();renderStats();}
+function renderBkNudge(){
+const box=document.getElementById('bkNudge');if(!box)return;box.innerHTML='';
+const d=daysSinceBackup();
+const days=Object.keys(S.w).length+Object.keys(S.d).length;
+if(d<7||days<3)return;
+const el=document.createElement('div');el.className='bkn';
+el.innerHTML='<b>'+(d>900?'You have never backed up':'Last backup was '+d+' days ago')+'</b>'+
+'All of this lives only in Safari on this phone. One tap saves a copy to Files where clearing Safari cannot touch it.'+
+'<div class="bkr"><button onclick="downloadBackup()">Save file</button><button class="alt" onclick="exportData()">Copy text</button></div>';
+box.appendChild(el);}
 document.getElementById('insight').onclick=()=>showInsight(insIdx+1);
 render();
 </script>

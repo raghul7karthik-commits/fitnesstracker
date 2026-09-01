@@ -154,6 +154,35 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .wmg div{background:#0b0f16;border-radius:8px;padding:7px 3px;text-align:center}
 .wmg b{font-size:12px;color:#25d196;display:block}
 .wmg span{font-size:8.5px;color:#6b7280}
+.toast{position:fixed;left:50%;transform:translateX(-50%) translateY(80px);bottom:86px;background:#0f2119;border:1px solid #1d6b4f;color:#7ee2bb;padding:11px 18px;border-radius:22px;font-size:12.5px;font-weight:600;z-index:200;opacity:0;transition:all .28s cubic-bezier(.2,.8,.3,1);pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.5);max-width:88%;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.warn{background:#241a10;border-color:#4a3316;color:#f0b429}
+.nudge2{background:linear-gradient(135deg,#1d1610,#141118);border:1px solid #3d3116;border-radius:14px;padding:0;margin-bottom:9px;overflow:hidden}
+.nudge2 .nh{display:flex;align-items:center;gap:10px;padding:12px 13px 10px}
+.nudge2 .nic{width:32px;height:32px;border-radius:9px;background:#3d3116;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.nudge2 .nt{flex:1}
+.nudge2 .nt b{display:block;font-size:12.5px;color:#f0b429;font-weight:700}
+.nudge2 .nt span{font-size:11px;color:#8a94a6}
+.nudge2 .nbar{height:3px;background:#241a10}
+.nudge2 .nbar div{height:100%;background:#f0b429}
+.nudge2 .nact{display:flex;gap:6px;padding:10px 13px 12px}
+.nudge2 .nact button{flex:1;border:none;border-radius:8px;padding:9px;font-size:11.5px;font-weight:700}
+.nudge2 .nact .pb{background:#f0b429;color:#1c1810}
+.nudge2 .nact .sb{background:#241a10;color:#e2c98a;border:1px solid #3d3116}
+.ib{width:20px;height:20px;border-radius:50%;border:1px solid #2a313d;color:#4a5262;font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-style:italic;font-weight:700}
+.ib:active{background:#1b222e}
+.infoSheet .bodymap{display:flex;gap:14px;align-items:center;background:#0b0f16;border:1px solid #1b222e;border-radius:11px;padding:12px;margin:10px 0}
+.infoSheet .bmT{flex:1;font-size:11.5px;color:#8a94a6;line-height:1.6}
+.infoSheet h4{font-size:15px;margin-bottom:2px}
+.infoSheet .isub{font-size:11px;color:#6b7280;margin-bottom:4px}
+.ilab{font-size:9px;letter-spacing:.8px;color:#4a5262;font-weight:700;margin:11px 0 4px}
+.itxt{font-size:12.5px;color:#c3cad6;line-height:1.6}
+.itxt.warn{color:#e2c98a}
+.msearch{width:100%;background:#0b0f16;border:1px solid #2a313d;border-radius:9px;padding:11px;color:#e8eaed;font-size:13px;font-family:inherit;margin:10px 0 4px}
+.mtabs{display:flex;gap:6px;margin:10px 0 6px}
+.mtab{flex:1;text-align:center;padding:8px;border-radius:8px;background:#0b0f16;border:1px solid #1b222e;font-size:11px;color:#6b7280;font-weight:600}
+.mtab.on{background:#12291f;border-color:#1d6b4f;color:#25d196}
+.mi .msrc{color:#4a5262;font-size:9.5px;display:block}
 .bkn{background:#241a10;border:1px solid #4a3316;border-radius:11px;padding:11px 12px;margin-bottom:9px;font-size:12px;color:#e2c98a;line-height:1.5}
 .bkn b{color:#f0b429;display:block;font-size:11px;margin-bottom:3px}
 .bkn .bkr{display:flex;gap:6px;margin-top:8px}
@@ -203,13 +232,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="sh" onclick="tog('secW')"><span class="si" id="wIcon">🏋️</span><span class="st" id="wTitle">Workout</span><span class="sc" id="wCount">0/0</span><span class="sa">▾</span></div>
 <div class="sb"><div id="exList"></div>
 <button class="b" onclick="markAll()">Mark all done</button>
-<button class="b" onclick="openMove()">↔ Move a workout in or out</button></div></div>
+<button class="b" onclick="openMove()">+ Add or move an exercise</button></div></div>
 
 <div class="sec" id="secC"><div class="sh" onclick="tog('secC')"><span class="si">🏃</span><span class="st">Cardio</span><span class="sc" id="cCount">0 min</span><span class="sa">▾</span></div>
 <div class="sb"><div id="cardioList"></div></div></div>
 
 <div class="sec" id="secS"><div class="sh" onclick="tog('secS')"><span class="si">🧘</span><span class="st">Stretches</span><span class="sc" id="sCount">0</span><span class="sa">▾</span></div>
-<div class="sb"><div id="stretchList"></div><button class="b" onclick="markCore()">Mark core 6</button></div></div>
+<div class="sb"><div id="stretchList"></div><button class="b" onclick="markCore()">Mark the ★ essentials</button></div></div>
 
 <div class="sec" id="secN"><div class="sh" onclick="tog('secN')"><span class="si">📝</span><span class="st">Log</span><span class="sm" id="nHint"></span><span class="sa">▾</span></div>
 <div class="sb">
@@ -229,7 +258,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="msg" id="exMsg"></div>
 <button class="b" onclick="openWLog()">All entries</button></div></div>
 
-<div class="sec open" id="secK"><div class="sh" onclick="tog('secK')"><span class="si">📅</span><span class="st">This Week</span><span class="sc" id="kCount">—</span><span class="sa">▾</span></div>
+<div class="sec" id="secK"><div class="sh" onclick="tog('secK')"><span class="si">📅</span><span class="st">This Week</span><span class="sc" id="kCount">—</span><span class="sa">▾</span></div>
 <div class="sb"><div class="wk" id="weekView"></div><div class="cyrow" id="cycRow"></div></div></div>
 </div>
 
@@ -247,17 +276,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="st2"><span>Rate / week</span><b id="dRate">—</b></div>
 <div class="st2"><span>Projected 70 kg</span><b id="dProj">—</b></div></div></div>
 
-<div class="sec open"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">🔎</span><span class="st">What your data says</span><span class="sa">▾</span></div>
+<div class="sec"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">🔎</span><span class="st">What your data says</span><span class="sa">▾</span></div>
 <div class="sb"><div id="findList"></div></div></div>
 
-<div class="sec open"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">📉</span><span class="st">Weight Trend</span><span class="sa">▾</span></div>
+<div class="sec"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">📉</span><span class="st">Weight Trend</span><span class="sa">▾</span></div>
 <div class="sb"><div class="chartwrap"><canvas id="chart"></canvas></div></div></div>
 
-<div class="sec open"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">📊</span><span class="st">Volume by muscle · 14d</span><span class="sa">▾</span></div>
+<div class="sec"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">📊</span><span class="st">Volume by muscle · 14d</span><span class="sa">▾</span></div>
 <div class="sb"><div id="volList"></div>
 <div style="font-size:10px;color:#4a5262;margin-top:8px;line-height:1.5">Sets actually completed, not planned. The focus rotation deliberately spikes one muscle each week.</div></div></div>
 
-<div class="sec open"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">✅</span><span class="st">Last 7 days</span><span class="sa">▾</span></div>
+<div class="sec"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">✅</span><span class="st">Last 7 days</span><span class="sa">▾</span></div>
 <div class="sb"><div class="st2"><span>Avg protein</span><b id="dProt">—</b></div>
 <div class="st2"><span>Days at 150g</span><b id="dProtD">—</b></div>
 <div class="st2"><span>Avg steps</span><b id="dStep">—</b></div>
@@ -268,10 +297,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="st2"><span>Core sessions</span><b id="dCore">—</b></div>
 <div class="chartwrap" style="height:110px"><canvas id="protChart"></canvas></div></div></div>
 
-<div class="sec open"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">📋</span><span class="st">Session history</span><span class="sc" id="shCount">—</span><span class="sa">▾</span></div>
+<div class="sec"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">📋</span><span class="st">Session history</span><span class="sc" id="shCount">—</span><span class="sa">▾</span></div>
 <div class="sb"><div id="histList"></div></div></div>
 
-<div class="sec open"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">💾</span><span class="st">Backup &amp; Restore</span><span class="sc" id="bkAge">—</span><span class="sa">▾</span></div>
+<div class="sec"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">💾</span><span class="st">Backup &amp; Restore</span><span class="sc" id="bkAge">—</span><span class="sa">▾</span></div>
 <div class="sb">
 <div style="font-size:11px;color:#8a94a6;line-height:1.6;margin-bottom:9px">Your data lives only in Safari on this phone. Clearing Safari website data erases it. Saving a file puts a copy in your Files app where a Safari wipe cannot reach it.</div>
 <button class="b pri" onclick="downloadBackup()">⬇ Save backup file to Files</button>
@@ -290,7 +319,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="sb"><div id="learnFind"></div></div></div>
 <div class="sec"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">🗓️</span><span class="st">The structure</span><span class="sa">▾</span></div>
 <div class="sb"><div style="font-size:12px;color:#8a94a6;line-height:1.65" id="cycExp"></div></div></div>
-<div class="sec open"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">🧠</span><span class="st">The mechanisms</span><span class="sa">▾</span></div>
+<div class="sec"><div class="sh" onclick="tog(this.parentNode.id)"><span class="si">🧠</span><span class="st">The mechanisms</span><span class="sa">▾</span></div>
 <div class="sb"><div id="learnList"></div></div></div>
 </div>
 
@@ -301,9 +330,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="nb" id="nLearn" onclick="go('Learn')"><i>✦</i>Learn</div>
 </div>
 
+<div class="toast" id="toast"></div>
 <div id="moveModal" class="modal hide" onclick="if(event.target===this)closeMove()">
-<div class="ms"><h3>Move a workout</h3><div style="font-size:11px;color:#6b7280">Pull anything from the days around this one. It moves off that day automatically.</div>
+<div class="ms"><h3>Add an exercise</h3><div style="font-size:11px;color:#6b7280">Move one from a nearby day, or search the full programme.</div>
 <div id="moveBody"></div><button class="b" onclick="closeMove()">Close</button></div></div>
+
+<div id="infoModal" class="modal hide" onclick="if(event.target===this)closeInfo()">
+<div class="ms infoSheet"><h4 id="ifName"></h4><div class="isub" id="ifSub"></div>
+<div class="bodymap"><div id="ifMap"></div><div class="bmT" id="ifTarget"></div></div>
+<div class="ilab">HOW TO DO IT</div><div class="itxt" id="ifHow"></div>
+<div id="ifCueW"><div class="ilab">KEY CUE</div><div class="itxt" id="ifCue"></div></div>
+<div id="ifMisW"><div class="ilab">COMMON MISTAKE</div><div class="itxt warn" id="ifMis"></div></div>
+<button class="b" onclick="closeInfo()">Close</button></div></div>
 
 <div id="wlogModal" class="modal hide" onclick="if(event.target===this)closeWLog()">
 <div class="ms"><h3>All entries</h3><div style="font-size:11px;color:#6b7280">Tap to jump to that day.</div>
@@ -404,7 +442,36 @@ const DAY={
 ['Superman + Cobra','3 sets',['superman','cobra'],'Back Extension 3x12','core'],
 ['Butterfly + full stretch','15 min',['butterfly','stretch'],'Yoga flow 15 min','core']]}};
 const CARDIO=['Incline treadmill','Stairmaster','Bike','Rower','Elliptical','Brisk walk','Assault bike intervals','Cricket match'];
-const STRETCH=[['Butterfly',1],['Hip flexor / couch',1],['Hamstring',1],['Thoracic rotation',1],['Cobra arch',1],['Chest / shoulder opener',1],['90-90 hip',0],['Piriformis',0],['World\u2019s greatest',0],['Deep squat hold',0],['Cat-cow',0],['Child\u2019s pose',0],['Quad',0],['Calf + ankle',0],['Wrist / forearm',0],['Neck rolls',0],['Band dislocates',0],['Lat stretch',0]];
+const STRETCH=[
+['Neck rolls','neck',0,'Slowly circle the head, half circles front only. 5 each way.','Never roll backwards through the top \u2014 go ear to chest to ear.'],
+['Upper trap stretch','neck',1,'Tilt the ear to the shoulder, hand gently on the head for a little extra.','Where desk tension actually sits. 30s each side.'],
+['Levator scap stretch','neck',0,'Turn the head 45 degrees, look down into the armpit, gentle hand pressure.','Reaches the muscle behind the neck the trap stretch misses.'],
+['Chin tuck','neck',0,'Pull the chin straight back making a double chin, hold 5s, repeat 10.','Directly counters the forward head from screens.'],
+['Doorway chest stretch','shoulder',1,'Forearm on the door frame at 90 degrees, step through and turn away.','The chest tightens from hunching and pulls the shoulders forward.'],
+['Cross-body shoulder','shoulder',0,'Pull one arm across the chest with the other hand.','Rear shoulder. 30s each side.'],
+['Band dislocates','shoulder',0,'Wide grip on a band, take it from front of thighs over the head to behind, and back.','Best single shoulder mobility drill. Go wide, never force it.'],
+['Sleeper stretch','shoulder',0,'Lie on your side, arm at 90 degrees, gently press the forearm toward the floor.','Internal rotation \u2014 tight in anyone who benches.'],
+['Thoracic rotation (open book)','spine',1,'On your side, knees bent, open the top arm across and follow it with the eyes.','Upper back rotation. Directly feeds your batting turn.'],
+['Cat-cow','spine',0,'On all fours, alternate arching and rounding the spine with the breath.','Warms the whole spine. 10 slow cycles.'],
+['Cobra arch','spine',1,'Face down, hands under shoulders, press the chest up, hips stay down.','Extension \u2014 the opposite of sitting all day.'],
+['Child\u2019s pose','spine',0,'Kneel, sit back on the heels, reach the arms forward and let the chest sink.','Decompresses the lower back. Breathe into it for 60s.'],
+['Lat stretch','spine',0,'Hold a rack at waist height, step back and sink the hips, letting the chest drop.','Tight lats limit overhead pressing.'],
+['Supine spinal twist','spine',0,'On your back, drop both knees to one side, arms out wide, look the other way.','Gentle full-spine rotation. 45s each side.'],
+['Hip flexor / couch stretch','hip',1,'Half kneeling, tuck the pelvis under and push the hip forward.','The single most important stretch for a desk job. Squeeze the glute of the back leg.'],
+['90-90 hip stretch','hip',0,'Both knees at 90, one leg in front and one to the side, lean over the front shin.','Opens rotation in the hip. Sitting slowly takes this away.'],
+['Piriformis / figure-4','hip',0,'On your back, ankle across the opposite knee, pull that thigh toward you.','Deep glute. Often the real source of lower back tightness.'],
+['Butterfly','hip',1,'Soles together, knees dropping out, sit tall and lean forward from the hips.','Inner thigh and groin. Let gravity do it, do not push the knees.'],
+['Deep squat hold','hip',0,'Sink into the bottom of a squat and just sit there, elbows inside the knees.','Ankles, hips and lower back all at once. Build to 60s.'],
+['World\u2019s greatest stretch','hip',0,'Lunge forward, drop the same-side elbow inside the foot, then rotate the top arm to the sky.','Hits hip, hamstring and thoracic rotation in one move.'],
+['Standing hamstring','ham',1,'Heel on a low step, leg straight, hinge forward from the hips with a flat back.','Hinge, do not round. The stretch should be in the belly of the hamstring.'],
+['Seated hamstring','ham',0,'Seated, one leg straight, reach toward the toes keeping the back long.','Rounding the back cheats it \u2014 lead with the chest.'],
+['Quad stretch','ham',0,'Standing, pull the heel to the glute, knees together, hips pushed forward.','Tuck the pelvis or you will feel nothing.'],
+['Calf + ankle mobility','ham',1,'Hands on a wall, back leg straight, heel down, lean in. Then bend the knee for the lower calf.','Do both versions \u2014 they hit different muscles.'],
+['Ankle rocks','ham',0,'Half kneeling, drive the front knee forward over the toes keeping the heel down.','Ankle range is what lets you squat deep without the heels lifting.'],
+['Plantar / toe stretch','ham',0,'Toes tucked under, sit back on the heels gently.','Underrated for anyone on their feet or running.'],
+['Wrist flexor stretch','wrist',0,'Arm straight, palm up, gently pull the fingers back and down.','Balances all the gripping.'],
+['Wrist extensor stretch','wrist',0,'Arm straight, palm down, gently press the back of the hand down.','The other half. Both matter for forearm and grip work.']];
+const SREG=[['neck','NECK & UPPER TRAPS'],['shoulder','SHOULDERS & CHEST'],['spine','SPINE & BACK'],['hip','HIPS & GLUTES'],['ham','LEGS, HAMSTRINGS & CALVES'],['wrist','WRISTS & FOREARMS']];
 const TRIVIA=[
 ['Core work will not burn belly fat','Spot reduction is not a thing. Ab training builds the muscle underneath; the fat covering it comes off through the deficit alone.'],
 ['Focus day is muscle insurance','You cannot build size in a deficit. The high-volume day buys retention while fat comes off.'],
@@ -414,7 +481,7 @@ const TRIVIA=[
 ['Hunger is a carb problem','An all-rice-and-idli day spikes and crashes blood sugar, and each crash reads as hunger.'],
 ['Protein does three jobs','Preserves muscle, highest thermic cost of the macros, keeps you fullest per calorie.'],
 ['Triglycerides hate sugar more than fat','TG responds far more sharply to sugar than to dietary fat. Sweets go before rice.'],
-['NEAT beats the treadmill','The gap between 3k and 10k steps is 300-500 kcal — more than most gym sessions.'],
+['NEAT beats the treadmill','The gap between 3k and 10k steps is 300-500 kcal \u2014 more than most gym sessions.'],
 ['Weight is noisy, the average is not','Daily swings are water and gut content. Only the 7-day average means anything.'],
 ['Wide shoulders narrow the waist','Shoulder and back width changes how the waist reads. That is why weeks 2 and 3 matter for fit.'],
 ['Muscle is a glucose sink','Contracting muscle pulls glucose from blood without insulin. Every set is insulin-sensitivity work.'],
@@ -452,6 +519,73 @@ const DEEP=[
 'TG responds fastest, often within weeks. HDL moves slowly and mostly through sustained exercise. Liver enzymes track the liver fat itself. If TG has dropped meaningfully but HDL has not, that is normal and not a failure. If nothing has moved, the honest first suspect is alcohol frequency, then total intake.'],
 ['Why strength holding is the real success metric',
 'If your lifts stay flat or climb while the scale drops, the weight leaving is fat and the muscle is intact. If lifts fall across two consecutive weeks alongside the scale, you are cutting too hard and the answer is to add 100-150 kcal back, not to train more.']];
+const MUSC={chest:'Chest',tri:'Triceps',shoulder:'Shoulders',bi:'Biceps',back:'Back & Lats',legs:'Legs & Glutes',core:'Core & Abs',cardio:'Whole body',neck:'Neck',hip:'Hips & Glutes',ham:'Hamstrings & Calves',wrist:'Wrists & Forearms',spine:'Spine & Back'};
+const INFO={
+'Barbell Bench Press':['Lie flat, grip just wider than shoulders. Lower the bar to mid-chest with elbows about 45 degrees from your body, then press up.','Keep shoulder blades pinched back and feet planted.','Flaring elbows straight out to the sides \u2014 hard on the shoulder joint.'],
+'Incline DB Press':['Bench at 30-45 degrees. Press dumbbells from chest level up and slightly together.','Angle hits the upper chest, which is what builds the fuller look under a shirt.','Setting the bench too steep turns it into a shoulder press.'],
+'Cable Fly':['Cables at chest height. Arms slightly bent and fixed, sweep hands together in an arc.','Think of hugging a barrel. The elbow angle should not change.','Bending and straightening the arms \u2014 that makes it a press, not a fly.'],
+'Pec Deck':['Sit tall, forearms on the pads, squeeze the pads together.','Machine version of the fly \u2014 easier to control, good for the last sets.','Letting the shoulders roll forward at the end of the squeeze.'],
+'Dips / Decline Press':['Dips: lean forward slightly, lower until upper arms are parallel, press up. Decline press: bench angled down, press as normal.','Leaning forward shifts load to chest; staying upright shifts it to triceps.','Going too deep and straining the front of the shoulder.'],
+'Push-ups to failure':['Hands under shoulders, body in one straight line from head to heels. Lower until chest nearly touches.','Finisher \u2014 go until form breaks, not until it hurts.','Hips sagging or piking up.'],
+'Rope Pushdown':['Elbows pinned at your sides. Push the rope down and spread the ends apart at the bottom.','Only the forearm moves. Everything above the elbow stays still.','Using the shoulders to drive the weight down.'],
+'Overhead Tricep Extension':['Hold the weight overhead, lower behind the head by bending only at the elbow, then extend.','Stretches the long head of the triceps, which the pushdown misses.','Elbows flaring wide instead of pointing forward.'],
+'DB Kickback':['Hinge forward, upper arm parallel to the floor and locked there. Extend the forearm back until straight.','Squeeze at the top for a moment. Light weight is fine here.','Swinging the whole arm instead of hinging at the elbow.'],
+'Seated DB Shoulder Press':['Back supported, dumbbells at ear height, press overhead until arms are nearly straight.','Keep ribs down so the lower back does not arch.','Pressing the weights too far forward or clanging them together at the top.'],
+'Barbell Overhead Press':['Bar at collarbone, grip just outside shoulders. Press straight up, moving the head slightly back then through.','Squeeze glutes and brace the core \u2014 it stops the lower back arching.','Leaning back to turn it into an incline press.'],
+'Lateral Raise':['Slight bend in the elbow, raise the dumbbells out to the sides to shoulder height.','This is the exercise that builds shoulder width. Light weight, strict form.','Swinging up with momentum or going above shoulder height.'],
+'DB Front Raise':['Raise the dumbbells straight forward to shoulder height, palms down.','Hits the front delt. One arm at a time is easier to keep strict.','Rocking the torso to get the weight up.'],
+'Rear Delt Fly':['Hinge forward, arms hanging. Sweep them out and back like opening wings.','The most neglected shoulder head, and the one that fixes desk-job posture.','Shrugging \u2014 keep the traps relaxed and lead with the elbows.'],
+'Shrug':['Hold weight at your sides, lift the shoulders straight up toward the ears, pause, lower.','Straight up and down. No rolling.','Rolling the shoulders in circles \u2014 no benefit, some risk.'],
+'Barbell Curl':['Elbows at your sides, curl the bar up, lower under control.','The lowering half builds as much as the lifting half. Take 2 seconds down.','Swinging the hips to launch the weight.'],
+'Hammer Curl':['Palms facing each other throughout the curl.','Neutral grip hits the brachialis, which pushes the bicep up and makes the arm look thicker.','Letting the elbows drift forward.'],
+'Preacher / Cable Curl':['Upper arms flat on the pad, curl up from a full stretch at the bottom.','The pad removes all cheating \u2014 the bicep does everything.','Bouncing out of the bottom position; that stretch is where the strain is.'],
+'Deadlift':['Bar over mid-foot. Hinge at the hips, flat back, grip the bar, then drive the floor away and stand tall.','Chest up, bar close to the legs the whole way.','Rounding the lower back or jerking the bar off the floor.'],
+'Weighted / Assisted Pull-up':['Hang from the bar, pull until the chin clears it, lower under control.','Think about pulling the elbows down to your ribs, not pulling with the hands.','Kipping or half-reps \u2014 full hang each time.'],
+'Barbell Row':['Hinge to about 45 degrees, flat back. Row the bar to the lower ribs, squeeze, lower.','The torso angle stays fixed for the whole set.','Standing up progressively as the set gets hard.'],
+'Lat Pulldown':['Grip wide, lean back slightly, pull the bar to the upper chest.','Drive the elbows down and back. Chest stays proud.','Pulling behind the neck, or leaning way back into a row.'],
+'Lat Pulldown (wide)':['Wide grip, pull to upper chest, control on the way up.','Wider grip biases lat width over thickness.','Using bodyweight momentum to yank the bar down.'],
+'Chest-Supported Row':['Chest against the pad, row the handles to your ribs.','The pad removes the lower back entirely \u2014 good on a heavy week.','Letting the shoulders shrug up instead of the elbows going back.'],
+'Seated Cable Row':['Sit tall, pull the handle to your stomach, squeeze the shoulder blades.','Torso stays near vertical. Do not rock.','Rowing with the lower back swinging back and forth.'],
+'Straight-arm Pulldown':['Arms straight, push the bar down in an arc from head height to thighs.','Isolates the lats without the biceps helping.','Bending the elbows and turning it into a pushdown.'],
+'Face Pull':['Rope at face height, pull toward your forehead, splitting the rope, elbows high.','The single best exercise for shoulder health and desk posture.','Pulling it low to the chest instead of to the face.'],
+'Barbell / Hack Squat':['Feet shoulder width. Sit down and back, knees tracking over toes, to at least parallel.','Brace your core hard before each rep, like you are about to be punched.','Knees caving inward, or heels lifting off the floor.'],
+'Hack / Goblet Squat':['Goblet: hold a dumbbell at your chest, squat down between your knees. Hack: shoulders under the pads, push through the heels.','Both are more back-friendly than a barbell squat.','Letting the chest collapse forward at the bottom.'],
+'Leg Press':['Feet mid-platform, shoulder width. Lower until knees reach about 90 degrees, press back without locking out.','Lower back stays flat against the pad the whole time.','Going so deep the hips curl off the seat \u2014 that is where backs get hurt.'],
+'Romanian Deadlift':['Soft knees, push the hips back, lower the bar down the thighs until you feel the hamstring stretch, then drive hips forward.','This is a hip hinge, not a squat. The bar stays in contact with the legs.','Bending the knees to lower the bar instead of hinging the hips.'],
+'Bulgarian Split Squat':['Rear foot on a bench, front foot forward. Lower straight down, drive up through the front heel.','Brutal but the best single-leg builder. Start with bodyweight.','Front foot too close to the bench \u2014 crushes the knee.'],
+'Walking Lunge':['Step forward, lower the back knee toward the floor, drive up and step through.','Torso upright, front shin roughly vertical.','Short steps that push the knee far past the toes.'],
+'Leg Extension':['Sit back, pad on the shins, extend the knees fully, squeeze, lower slowly.','Pure quad isolation. Great finisher after the heavy work.','Slamming into full lockout with heavy weight.'],
+'Lying Leg Curl':['Face down, pad above the heels, curl the heels toward the glutes.','Hips stay pressed into the bench.','Lifting the hips to help the curl.'],
+'Seated Leg Curl':['Pad above the ankles, curl down and back, squeeze the hamstrings.','Seated version gives a slightly stronger stretch than lying.','Not controlling the return \u2014 the negative matters.'],
+'Hip Thrust':['Upper back on a bench, bar over the hips. Drive the hips up until the body is a straight line, squeeze glutes hard.','Chin tucked, ribs down. Pause at the top.','Over-arching the lower back at the top instead of squeezing the glutes.'],
+'Standing Calf Raise':['Balls of the feet on a step, drop the heels for a stretch, then rise as high as possible.','Full range \u2014 the stretch at the bottom is half the work.','Bouncing quickly through a short range.'],
+'Calf Raise':['Rise onto the balls of the feet, pause at the top, lower slowly to a stretch.','Slow tempo, full range.','Rushing the reps.'],
+'Med Ball Rotational Throw':['Stand side-on to a wall, rotate from the hips and throw the ball hard into the wall.','This is your batting power exercise \u2014 hips lead, then trunk, then arms.','Throwing with the arms only and keeping the hips still.'],
+'Cable Woodchop':['Cable high, pull down and across the body, rotating through the trunk.','Rotate from the ribcage, not just the arms.','Keeping the hips locked so the lower back does all the twisting.'],
+'Pallof Press':['Stand side-on to a cable at chest height. Press the handle straight out and resist the pull to rotate.','This is an anti-rotation exercise \u2014 the goal is to not move.','Letting the torso twist toward the cable.'],
+'Plank':['Forearms and toes, body in one straight line. Squeeze glutes and brace the abs.','Quality over duration. 30 hard seconds beats 2 soft minutes.','Hips sagging or lifting into a pike.'],
+'Side Plank':['On one forearm, body straight, hips stacked and lifted.','Trains the side abs which stabilise the spine when you rotate.','Hips dropping toward the floor.'],
+'Hanging Leg Raise':['Hang from a bar, raise straight legs to hip height or above without swinging.','Curl the pelvis up at the top \u2014 that is what makes the abs work.','Swinging and using momentum.'],
+'Hanging Knee Raise':['Hang and raise the knees toward the chest, controlled.','Easier progression before straight-leg raises.','Rocking back and forth.'],
+'Cable Crunch':['Kneel below the cable, rope beside the head. Crunch down by rounding the spine, not by bending the hips.','Think of curling the ribs toward the pelvis.','Hinging at the hips \u2014 that turns it into a hip flexor exercise.'],
+'Dead Bug':['On your back, arms up, knees at 90. Lower one arm and the opposite leg, keeping the lower back flat.','If the back arches off the floor, shorten the range.','Rushing \u2014 slow is the whole point.'],
+'Superman':['Face down, lift arms, chest and legs off the floor at the same time, hold briefly.','Trains the spinal erectors \u2014 direct antidote to hunching at a desk.','Cranking the neck up and back.'],
+'Superman + Cobra':['Superman as above. Cobra: hands under shoulders, press the chest up while hips stay down.','Both extend the spine backwards, undoing a day of sitting.','Forcing the range \u2014 it should feel like an open stretch, not a pinch.'],
+'Cobra Arch':['Lie face down, hands under shoulders, press the chest up leaving the hips on the floor.','Open the chest and breathe into it.','Shrugging the shoulders up to the ears.'],
+'Russian Twist':['Sit, lean back to about 45 degrees, feet up if you can, rotate side to side.','Rotate from the ribs, and pause at each side.','Flinging the arms while the torso stays still.'],
+'Mountain Climbers':['Push-up position, drive the knees toward the chest alternately at pace.','Hips stay level \u2014 do not let them bounce up.','Going so fast the form falls apart.'],
+'Ab Wheel / Reverse Crunch':['Wheel: from the knees, roll out as far as you can control and pull back. Reverse crunch: on your back, curl the hips off the floor.','Both fight the lower back arching, which is the real job of the abs.','Rolling out further than you can pull back from.'],
+'Band activation':['Light band work for shoulders and hips before a match \u2014 pull-aparts, monster walks.','Warm the joints you are about to load. 10 minutes is enough.','Skipping it and going straight into full-speed swings.'],
+'Light goblet squats':['Hold a light weight at the chest, squat down and up for 2 easy sets.','Priming the legs, not training them. Stay well short of hard.','Treating it as a working set before a match.'],
+'Rotational swings':['Controlled trunk rotations and practice swings, building up in speed.','Gradually increase range and speed rather than starting at full power.','Full-power swings while still cold.'],
+'MATCH':['Play. The match is the training session.','Hydrate, and log the time played as cardio afterwards.',''],
+'Brisk walk':['Continuous walking at a pace where you can talk but not sing.','This is zone 2 \u2014 the single most useful cardio for your triglycerides.','Strolling too slowly to raise the heart rate.'],
+'Brisk walk / bike':['Steady conversational pace on foot or on the bike for 30 minutes.','Should feel sustainable, not hard.','Turning it into intervals and burning recovery you need for lifting.'],
+'Zone 2 cardio':['Steady effort where a conversation is possible but slightly breathy. Roughly 110-135 bpm for you.','Duration matters more than intensity here. Longer beats harder.','Drifting too hard and making it a zone 3 slog.'],
+'Full stretch routine':['Work top to bottom \u2014 neck, shoulders, spine, hips, hamstrings, calves. 30-45 seconds each.','Breathe out as you ease deeper. Never bounce.','Holding your breath and forcing the range.'],
+'Butterfly + full stretch':['Soles of the feet together, knees dropping outward, then run through the rest of the body.','Hips are the tightest area for a desk job. Give them the most time.','Pushing the knees down hard with the hands.'],
+'Hammer Curl + Rope Pushdown':['Superset \u2014 do a set of hammer curls, then immediately a set of pushdowns, then rest.','Biceps and triceps back to back saves time and keeps the heart rate up.','Resting between the two halves and losing the superset effect.'],
+'Wrist Curls':['Forearms on the thighs, palms up, curl the wrists up and down. Then flip palms down and repeat.','Builds grip and forearm, which carries into batting.','Using too much weight and letting the elbows move.']};
 const KEY='raghul-forge-v4',CYCLE_START='2026-07-27',PT=150,ST=10000,SL=7.5;
 let S={w:{'2026-08-03':77.25},d:{},cardio:{},stretch:{},notes:{},added:{},swaps:{},skipped:{},prot:{},steps:{},sleep:{}};
 try{let raw=localStorage.getItem(KEY)||localStorage.getItem('raghul-forge-v3')||localStorage.getItem('raghul-forge-v2')||localStorage.getItem('raghul-forge-v1');
@@ -501,6 +635,10 @@ let c=0;for(let i=0;i<7;i++){const d=new Date(m);d.setDate(m.getDate()+i);
 const k=iso(d);if(baseFor(k,d.getDay()).gym&&(S.d[k]||[]).length)c++;}return c;}
 const coreDays=()=>last7().filter(k=>{const done=S.d[k]||[];
 return dayList(k,new Date(k+'T12:00:00').getDay()).some(x=>x.m==='core'&&done.includes(x.id));}).length;
+let toastT;
+function toast(msg,warn){const t=document.getElementById('toast');if(!t)return;
+t.textContent=msg;t.className='toast show'+(warn?' warn':'');
+clearTimeout(toastT);toastT=setTimeout(()=>{t.className='toast'+(warn?' warn':'');},2300);}
 function tog(id){const e=document.getElementById(id);if(e)e.classList.toggle('open');}
 function go(p){['Home','Week','Stats','Learn'].forEach(x=>{
 document.getElementById('pg'+x).classList.toggle('hide',x!==p);
@@ -517,18 +655,24 @@ if(cur>tk())return;
 const chk=off=>{const d=new Date(cur+'T12:00:00');d.setDate(d.getDate()+off);
 if(iso(d)>tk())return null;
 const k=iso(d),dw=d.getDay(),done=S.d[k]||[],b=baseFor(k,dw);
-const miss=dayList(k,dw).filter(x=>!done.includes(x.id)&&!x.from);
+const list=dayList(k,dw);
+const miss=list.filter(x=>!done.includes(x.id)&&!x.from);
 if(!miss.length||!b.gym)return null;
-return{k,dw,miss:miss.length,name:b.name};};
-const y=chk(-1),t2=chk(-2);
-const src=y||t2;
+return{k,dw,miss:miss.length,total:list.length,done:list.length-miss.length,name:b.name,ic:b.icon};};
+const src=chk(-1)||chk(-2);
 if(!src)return;
-const el=document.createElement('div');el.className='nudge';
-el.innerHTML='<span style="font-size:15px">↩</span><div style="flex:1"><b>'+DN[src.dw]+' left unfinished</b>'+
-src.miss+' of '+src.name+' never got ticked. Pull them into '+(cur===tk()?'today':DN[cdow()])+' or mark them off if you did them.'+
-'<br><button onclick="openMove()">Move them over</button></div>';
+const pct=Math.round(src.done/src.total*100);
+const el=document.createElement('div');el.className='nudge2';
+el.innerHTML='<div class="nh"><div class="nic">'+src.ic+'</div><div class="nt">'+
+'<b>'+DN[src.dw]+' \u00b7 '+src.name+'</b>'+
+'<span>'+src.done+' of '+src.total+' done \u00b7 '+src.miss+' still open</span></div></div>'+
+'<div class="nbar"><div style="width:'+pct+'%"></div></div>'+
+'<div class="nact"><button class="pb" onclick="openMove()">Bring them here</button>'+
+'<button class="sb" onclick="closeOut(\''+src.k+'\')">I did them</button></div>';
 box.appendChild(el);}
-
+function closeOut(k){const dw=new Date(k+'T12:00:00').getDay();
+S.d[k]=dayList(k,dw).map(x=>x.id);P();
+toast('\u2713 '+DN[dw]+' marked complete');render();}
 function buildInsights(){
 const L=[],a=avg7(),r=rate(),sw=startW(),st=streak(),cw=wkCardio(),gy=wkGym();
 const dates=Object.keys(S.w).sort(),last=dates.length?dates[dates.length-1]:null;
@@ -636,8 +780,13 @@ const on=done.includes(it.id);
 const d=document.createElement('div');
 d.className='r'+(on?' on':'')+(it.late?' late':(it.swap?' swap':''));
 d.innerHTML='<div class="k">'+(on?'✓':'')+'</div><div class="n">'+it.n+
-(it.from?'<span class="tg y">moved from '+it.from+'</span>':'')+
+(it.from?'<span class="tg y">'+(it.from==='added'?'added by you':it.from==='logged'?'logged from notes':'moved from '+it.from)+'</span>':'')+
 (it.swap?'<span class="tg p">variant</span>':'')+'</div><div class="p">'+it.r+'</div>';
+const ib=document.createElement('div');ib.className='ib';ib.textContent='i';
+ib.onclick=e=>{e.stopPropagation();
+const base=it.n.replace(/^CIRCUIT ×2 · /,'').replace(/^CIRCUIT \u00d72 \u00b7 /,'');
+showInfo(base,it.m,INFO[base],'Exercise');};
+d.appendChild(ib);
 d.onclick=()=>{let x=S.d[cur]||[];x=x.includes(it.id)?x.filter(y=>y!==it.id):[...x,it.id];S.d[cur]=x;P();render();};
 el.appendChild(d);});}
 
@@ -657,13 +806,23 @@ el.appendChild(d);});
 document.getElementById('cCount').textContent=Object.values(c).reduce((a,b)=>a+b,0)+' min';}
 
 function renderStretch(){
-const el=document.getElementById('stretchList');el.innerHTML='';const s=S.stretch[cur]||[];
-STRETCH.forEach(([nm])=>{const d=document.createElement('div');d.className='r'+(s.includes(nm)?' on':'');
-d.innerHTML='<div class="k">'+(s.includes(nm)?'✓':'')+'</div><div class="n">'+nm+'</div>';
-d.onclick=()=>{let a=S.stretch[cur]||[];a=a.includes(nm)?a.filter(x=>x!==nm):[...a,nm];S.stretch[cur]=a;P();render();};
-el.appendChild(d);});
-document.getElementById('sCount').textContent=s.length;}
-
+const el=document.getElementById('stretchList');el.innerHTML='';const sel=S.stretch[cur]||[];
+SREG.forEach(([rg,label])=>{
+const items=STRETCH.filter(x=>x[1]===rg);if(!items.length)return;
+const h=document.createElement('div');h.className='grp';
+h.innerHTML='<span>'+label+'</span><span>'+items.filter(x=>sel.includes(x[0])).length+'/'+items.length+'</span>';
+el.appendChild(h);
+items.forEach(x=>{const nm=x[0];
+const d=document.createElement('div');d.className='r'+(sel.includes(nm)?' on':'');
+const k=document.createElement('div');k.className='k';k.textContent=sel.includes(nm)?'\u2713':'';
+const t=document.createElement('div');t.className='n';t.textContent=nm+(x[2]?' \u2605':'');
+k.onclick=t.onclick=()=>{let a=S.stretch[cur]||[];a=a.includes(nm)?a.filter(y=>y!==nm):[...a,nm];S.stretch[cur]=a;P();render();};
+const ib=document.createElement('div');ib.className='ib';ib.textContent='i';
+ib.onclick=e=>{e.stopPropagation();showInfo(nm,x[1],[x[3],x[4],''],'Stretch');};
+d.appendChild(k);d.appendChild(t);d.appendChild(ib);el.appendChild(d);});});
+document.getElementById('sCount').textContent=sel.length;}
+function markCore(){S.stretch[cur]=STRETCH.filter(x=>x[2]===1).map(x=>x[0]);P();
+toast('\u2713 Core stretches marked');render();}
 function renderWeek(){
 const wv=document.getElementById('weekView');wv.innerHTML='';
 const n=new Date(cur+'T12:00:00'),m=new Date(n);m.setDate(n.getDate()-((n.getDay()+6)%7));
@@ -734,20 +893,22 @@ const r=document.createElement('div');r.className='wex';
 r.innerHTML='<span style="color:'+(done?'#7ee2bb':'#8a94a6')+'">'+(done?'\u2713 ':'')+it.n+'</span><span>'+it.r+'</span>';
 body.appendChild(r);});
 box.appendChild(c);});}
-function markAll(){S.d[cur]=dayList(cur,cdow()).map(x=>x.id);P();render();}
-function markCore(){S.stretch[cur]=STRETCH.filter(x=>x[1]===1).map(x=>x[0]);P();render();}
+function markAll(){S.d[cur]=dayList(cur,cdow()).map(x=>x.id);P();toast('\u2713 All marked done');render();}
 function saveW(){const v=parseFloat(document.getElementById('wIn').value);
-if(!v||v<40||v>150){document.getElementById('exMsg').textContent='Enter a valid weight';return;}
-S.w[cur]=v;P();document.getElementById('exMsg').textContent='Saved '+v+' kg for '+cur;render();}
+if(!v||v<40||v>150){toast('Enter a weight between 40 and 150',1);return;}
+const prev=S.w[cur];S.w[cur]=v;P();
+const dl=cur===tk()?'today':new Date(cur+'T12:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+toast('\u2713 '+v+' kg saved for '+dl+(prev?' (was '+prev+')':''));render();}
 function saveAll(){const p=parseInt(document.getElementById('pIn').value),s=parseInt(document.getElementById('stIn').value),z=parseFloat(document.getElementById('slIn').value);
 let m=[];
 if(p>0&&p<500){S.prot[cur]=p;m.push(p+'g');}
 if(s>0&&s<100000){S.steps[cur]=s;m.push(s+' steps');}
 if(z>0&&z<24){S.sleep[cur]=z;m.push(z+'h sleep');}
-if(!m.length){document.getElementById('exMsg').textContent='Enter at least one value';return;}
-P();document.getElementById('exMsg').textContent='Saved '+m.join(' · ');render();}
+if(!m.length){toast('Enter protein, steps or sleep first',1);return;}
+P();toast('\u2713 Saved '+m.join(' \u00b7 '));render();}
 function quickP(g){S.prot[cur]=(S.prot[cur]||0)+g;P();
-document.getElementById('exMsg').textContent='Protein now '+S.prot[cur]+'g';render();}
+const left=PT-S.prot[cur];
+toast('\u2713 +'+g+'g \u00b7 now '+S.prot[cur]+'g'+(left>0?' \u00b7 '+left+'g to go':' \u00b7 target hit'));render();}
 function openLog(id){document.getElementById('secN').classList.add('open');
 const e=document.getElementById(id);if(e.scrollIntoView)e.scrollIntoView({behavior:'smooth',block:'center'});
 setTimeout(()=>e.focus(),200);}
@@ -763,23 +924,62 @@ document.getElementById('wlogModal').className='modal';}
 function closeWLog(){document.getElementById('wlogModal').className='modal hide';}
 
 /* MOVE: pull from adjacent days either direction */
-function openMove(){const b=document.getElementById('moveBody');b.innerHTML='';let f=0;
+let moveTab=0;
+function openMove(){moveTab=0;document.getElementById('moveModal').className='modal';drawMove();}
+function setMoveTab(n){moveTab=n;drawMove();}
+function drawMove(){
+const b=document.getElementById('moveBody');b.innerHTML='';
+const tabs=document.createElement('div');tabs.className='mtabs';
+tabs.innerHTML='<div class="mtab'+(moveTab===0?' on':'')+'" onclick="setMoveTab(0)">Nearby days</div>'+
+'<div class="mtab'+(moveTab===1?' on':'')+'" onclick="setMoveTab(1)">All exercises</div>';
+b.appendChild(tabs);
+if(moveTab===0)drawNearby(b);else drawLibrary(b);}
+function addToDay(name,reps,muscle,fromLabel,srcKey,srcId){
+const a=S.added[cur]||[];
+a.push({n:name,r:reps,id:'mv-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),from:fromLabel,late:1,m:muscle});
+S.added[cur]=a;
+if(srcKey&&srcId){const sk=S.skipped[srcKey]||[];sk.push(srcId);S.skipped[srcKey]=sk;}
+P();closeMove();render();}
+function drawNearby(b){
+let f=0;
 [-3,-2,-1,1,2,3].forEach(off=>{
 const d=new Date(cur+'T12:00:00');d.setDate(d.getDate()+off);
 const k=iso(d),dw=d.getDay(),done=S.d[k]||[];
 const avail=dayList(k,dw).filter(x=>!done.includes(x.id)&&!x.from);
 if(!avail.length)return;f++;
 const h=document.createElement('div');h.className='mh';
-h.textContent=(off<0?'← ':'→ ')+DN[dw]+' '+k.slice(5)+' · '+avail.length+(off<0?' unfinished':' upcoming');
+h.textContent=(off<0?'\u2190 ':'\u2192 ')+DN[dw]+' '+k.slice(5)+' \u00b7 '+avail.length+(off<0?' unfinished':' upcoming');
 b.appendChild(h);
 avail.forEach(m=>{const it=document.createElement('div');it.className='mi';
 it.innerHTML='<span>'+m.n+'</span><span style="color:#6b7280">'+m.r+'</span>';
-it.onclick=()=>{const a=S.added[cur]||[];
-a.push({n:m.n,r:m.r,id:'mv-'+m.id+'-'+Date.now(),from:DN[dw],late:1,m:m.m});S.added[cur]=a;
-const sk=S.skipped[k]||[];sk.push(m.id);S.skipped[k]=sk;P();closeMove();render();};
+it.onclick=()=>addToDay(m.n,m.r,m.m,DN[dw],k,m.id);
 b.appendChild(it);});});
-if(!f)b.innerHTML='<div class="emp">Nothing available to move.</div>';
-document.getElementById('moveModal').className='modal';}
+if(!f){const e=document.createElement('div');e.className='emp';
+e.textContent='Nothing to move from the days around this one. Try All exercises.';b.appendChild(e);}}
+function drawLibrary(b){
+const inp=document.createElement('input');inp.className='msearch';inp.type='text';
+inp.placeholder='Search any exercise \u2014 e.g. preacher, deadlift, plank';
+b.appendChild(inp);
+const res=document.createElement('div');b.appendChild(res);
+const lib=[];const seen=new Set();
+FOCUS.forEach(f=>f.ex.forEach(e=>{if(seen.has(e[0]))return;seen.add(e[0]);lib.push({n:e[0],r:e[1],m:e[4],src:f.t});}));
+Object.keys(DAY).forEach(dw=>DAY[dw].ex.forEach(e=>{if(seen.has(e[0]))return;seen.add(e[0]);lib.push({n:e[0],r:e[1],m:e[4],src:DAY[dw].n});}));
+const GN={chest:'Chest',tri:'Triceps',shoulder:'Shoulders',bi:'Biceps',back:'Back',legs:'Legs',core:'Core',cardio:'Cardio'};
+const draw=q=>{res.innerHTML='';
+const ql=(q||'').toLowerCase().trim();
+const list=ql?lib.filter(x=>x.n.toLowerCase().includes(ql)||(GN[x.m]||'').toLowerCase().includes(ql)):lib;
+if(!list.length){res.innerHTML='<div class="emp">No match. Type fewer letters.</div>';return;}
+let lm=null;
+list.slice(0,80).forEach(x=>{
+if(!ql&&x.m!==lm){lm=x.m;const h=document.createElement('div');h.className='mh';h.textContent=GN[x.m]||x.m;res.appendChild(h);}
+const it=document.createElement('div');it.className='mi';
+it.innerHTML='<span>'+x.n+'<span class="msrc">'+x.src+'</span></span><span style="color:#6b7280">'+x.r+'</span>';
+it.onclick=()=>addToDay(x.n,x.r,x.m,'added');
+res.appendChild(it);});};
+lib.sort((a,c)=>{const o=['legs','back','chest','shoulder','bi','tri','core','cardio'];
+return (o.indexOf(a.m)-o.indexOf(c.m))||a.n.localeCompare(c.n);});
+inp.oninput=()=>draw(inp.value);
+draw('');}
 function closeMove(){document.getElementById('moveModal').className='modal hide';}
 
 function allEx(){const o=[];
@@ -817,7 +1017,8 @@ const done=(S.d[cur]||[]).length,t=dayList(cur,cdow()).length;
 let m='Saved \u00b7 '+done+'/'+t+' done \u00b7 '+cMin(cur)+' min cardio \u00b7 '+(S.prot[cur]||0)+'g protein';
 if(extra.length)m+='<br>Added &amp; ticked: '+extra.join(', ');
 if(pull.length)m+='<br>Adapted: '+pull.join('; ');
-document.getElementById('exMsg').innerHTML=m;}
+document.getElementById('exMsg').innerHTML=m;
+toast('\u2713 Session saved \u00b7 '+done+'/'+t+' done');}
 function setsOf(r){if(!r)return 0;const m=String(r).match(/^(\d+)\s*[x\u00d7]/i);if(m)return +m[1];
 if(/^\d+\s*sets?/i.test(r))return +r.match(/^(\d+)/)[1];
 if(/^[x\u00d7]/i.test(r))return 2;return 0;}
@@ -972,12 +1173,43 @@ const url=URL.createObjectURL(blob);const a=document.createElement('a');
 a.href=url;a.download='forge-backup-'+tk()+'.json';
 document.body.appendChild(a);a.click();document.body.removeChild(a);
 setTimeout(()=>URL.revokeObjectURL(url),1000);
-markBacked();
+markBacked();toast('\u2713 Backup file created');
 const m=document.getElementById('bkMsg');if(m)m.textContent='Saved. Choose Save to Files \u2192 iCloud Drive so it survives a Safari wipe.';}
 catch(e){const m=document.getElementById('bkMsg');if(m)m.textContent='Download blocked \u2014 use Copy backup as text instead.';}}
+const BODY={
+chest:[[50,52,20,13]],tri:[[30,66,8,16],[70,66,8,16]],shoulder:[[31,45,13,11],[69,45,13,11]],
+bi:[[29,64,8,15],[71,64,8,15]],back:[[50,55,24,22]],legs:[[41,105,12,34],[59,105,12,34]],
+core:[[50,76,17,16]],cardio:[[50,60,30,60]],neck:[[50,32,11,10]],
+hip:[[50,92,22,12]],ham:[[41,120,11,28],[59,120,11,28]],
+wrist:[[26,80,7,9],[74,80,7,9]],spine:[[50,58,10,30]]};
+function bodySVG(m){
+const hl=BODY[m]||[];
+const p='<circle cx="50" cy="24" r="9" fill="#1b222e"/>'+
+'<rect x="45" y="32" width="10" height="8" rx="3" fill="#1b222e"/>'+
+'<path d="M32 44 Q50 38 68 44 L70 78 Q50 84 30 78 Z" fill="#1b222e"/>'+
+'<rect x="24" y="46" width="9" height="36" rx="4.5" fill="#1b222e"/>'+
+'<rect x="67" y="46" width="9" height="36" rx="4.5" fill="#1b222e"/>'+
+'<rect x="36" y="80" width="12" height="62" rx="6" fill="#1b222e"/>'+
+'<rect x="52" y="80" width="12" height="62" rx="6" fill="#1b222e"/>';
+const h=hl.map(([cx,cy,w,ht])=>'<rect x="'+(cx-w/2)+'" y="'+(cy-ht/2)+'" width="'+w+'" height="'+ht+'" rx="'+Math.min(w,ht)/2.2+'" fill="#25d196" opacity=".85"/>').join('');
+return '<svg width="72" height="150" viewBox="0 0 100 150">'+p+h+'</svg>';}
+function showInfo(name,muscle,arr,kind){
+const i=arr||INFO[name]||['','',''];
+document.getElementById('ifName').textContent=name;
+document.getElementById('ifSub').textContent=(kind||'Exercise')+' \u00b7 '+(MUSC[muscle]||'');
+document.getElementById('ifMap').innerHTML=bodySVG(muscle);
+document.getElementById('ifTarget').innerHTML='<b style="color:#25d196">Works: '+(MUSC[muscle]||'\u2014')+'</b><br>'+
+'The highlighted area is what should be doing the work. If you feel it somewhere else, check the mistake below.';
+document.getElementById('ifHow').textContent=i[0]||'No description yet.';
+document.getElementById('ifCueW').style.display=i[1]?'':'none';
+document.getElementById('ifCue').textContent=i[1]||'';
+document.getElementById('ifMisW').style.display=i[2]?'':'none';
+document.getElementById('ifMis').textContent=i[2]||'';
+document.getElementById('infoModal').className='modal';}
+function closeInfo(){document.getElementById('infoModal').className='modal hide';}
 function exportData(){const t=bkPayload();
 if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(()=>{
-markBacked();const m=document.getElementById('bkMsg');if(m)m.textContent='Copied. Paste into Notes or WhatsApp to yourself.';})
+markBacked();toast('\u2713 Backup copied to clipboard');const m=document.getElementById('bkMsg');if(m)m.textContent='Copied. Paste into Notes or WhatsApp to yourself.';})
 .catch(()=>prompt('Copy this:',t));
 else{prompt('Copy this:',t);markBacked();}}
 function doRestore(replace){
@@ -997,7 +1229,7 @@ else{FIELDS.forEach(f=>{S[f]=S[f]||{};const src=inc[f]||{};
 Object.keys(src).forEach(k=>{if(S[f][k]===undefined){S[f][k]=src[k];n++;}});});}
 P();el.value='';
 msg.style.color='#7ee2bb';
-msg.textContent=(replace?'Replaced with backup \u2014 ':'Merged \u2014 ')+n+' entries now in place.';
+msg.textContent=(replace?'Replaced with backup \u2014 ':'Merged \u2014 ')+n+' entries now in place.';toast('\u2713 Restored '+n+' entries');
 renderBkAge();render();renderStats();}
 function renderBkNudge(){
 const box=document.getElementById('bkNudge');if(!box)return;box.innerHTML='';

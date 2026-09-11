@@ -258,6 +258,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .heatrow .hc div.p{background:var(--warn-tint);color:var(--warn)}
 .heatd{display:flex;gap:3px;margin-left:59px;margin-bottom:5px}
 .heatd div{flex:1;text-align:center;font-size:8.5px;color:var(--text-faint)}
+.fsearch{width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:11px;padding:12px;color:var(--text);font-size:15px;font-family:inherit;margin-bottom:7px}
+.frow{display:flex;gap:5px;overflow-x:auto;padding-bottom:5px;margin-bottom:6px;-webkit-overflow-scrolling:touch}
+.fq{flex:0 0 auto;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:7px 13px;font-size:12px;color:var(--text-soft);white-space:nowrap}
+.fq:active{background:var(--accent-tint);border-color:var(--accent-border)}
+.fres{max-height:280px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.fi{display:flex;align-items:center;gap:9px;padding:11px 10px;border-radius:10px;margin-bottom:5px;background:var(--surface);border:1px solid var(--border)}
+.fi .fn{flex:1;min-width:0}
+.fi .fn b{font-size:13.5px;font-weight:600;display:block}
+.fi .fn span{font-size:10px;color:var(--text-mute)}
+.fi .fp{font-size:11px;color:var(--accent);font-weight:700;white-space:nowrap}
+.fi .fg{width:26px;height:26px;border-radius:8px;border:1px solid var(--border2);color:var(--text-mute);font-size:9.5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700}
+.fadd{width:30px;height:30px;border-radius:9px;background:var(--accent);color:var(--accent-contrast);border:none;font-size:17px;font-weight:700;flex-shrink:0;line-height:1}
+.eaten{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:9px;margin-bottom:4px;background:var(--accent-tint);border:1px solid var(--accent-border)}
+.eaten .en{flex:1;font-size:12.5px}
+.eaten .ex2{color:var(--danger);font-size:15px;padding:0 4px}
+.mac{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin:8px 0}
+.mac div{background:var(--surface);border-radius:9px;padding:8px 2px;text-align:center}
+.mac b{font-size:13px;display:block;font-weight:700}
+.mac span{font-size:8px;color:var(--text-mute)}
+.mac .mp b{color:var(--accent)}
 .foods{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
 .fchip{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:8px 4px;text-align:center;position:relative}
 .fchip b{display:block;font-size:11px;color:var(--text-soft)}
@@ -334,10 +354,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="sb">
 <div class="lbl">WEIGHT (kg)</div>
 <div class="row2"><input type="number" step="0.05" inputmode="decimal" class="ipt" id="wIn" placeholder="kg"><button onclick="saveW()">Save</button></div>
-<div class="lbl">WHAT DID YOU EAT? tap each time you have one</div>
-<div class="foods" id="foodGrid"></div>
-<div class="pcalc"><b id="pTot">0g</b><span id="pSub">protein so far · target 150g</span></div>
-<button class="b" onclick="clearFood()">Clear today\u2019s food</button>
+<div class="lbl">FOOD · type or tap, portion is assumed</div>
+<input type="text" class="fsearch" id="fSearch" placeholder="idli, chicken curry, curd…" autocomplete="off">
+<div class="frow" id="fQuick"></div>
+<div class="fres" id="fRes"></div>
+<div class="mac" id="fMac"></div>
+<div id="fEaten"></div>
+<button class="b" onclick="sameAsYesterday()">↻ Same as yesterday</button>
+<button class="b" onclick="clearFood()">Clear today’s food</button>
 <div class="lbl">WALK / RUN — enter distance and time, steps are worked out</div>
 <div class="row3">
 <input type="number" step="0.1" inputmode="decimal" class="ipt" id="kmIn" placeholder="km">
@@ -433,95 +457,93 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <script>
-const FOCUS=[
-{k:'chest',t:'Chest + Triceps',ic:'💪',ex:[
-['Barbell Bench Press','4x6-8',['bench'],'DB Flat Press 4x8','chest'],
-['Incline DB Press','4x8-10',['incline'],'Incline Machine 4x10','chest'],
-['Cable Fly','3x12',['fly','flys','flies'],'DB Fly 3x12','chest'],
-['Pec Deck','3x12',['pec deck'],'Cable Crossover 3x12','chest'],
-['Dips / Decline Press','3x10',['dips','decline'],'Close-grip Press 3x10','chest'],
-['Push-ups to failure','2 sets',['push up','pushup'],'Incline Push-ups 2 sets','chest'],
-['Rope Pushdown','3x12',['pushdown','rope'],'Bench Dips 3x12','tri'],
-['Overhead Tricep Extension','3x12',['overhead ext','skull'],'Skull Crusher 3x12','tri'],
-['DB Kickback','3x15',['kickback','pushback'],'Cable Kickback 3x15','tri'],
-['Hanging Leg Raise','3x15',['hanging','leg raise'],'Lying Leg Raise 3x15','core'],
-['Plank','3x60s',['plank'],'Hollow Hold 3x40s','core']]},
-{k:'shoulder',t:'Shoulders + Arms',ic:'🎯',ex:[
-['Seated DB Shoulder Press','4x8',['shoulder press','ohp'],'Machine Press 4x10','shoulder'],
-['Barbell Overhead Press','4x6-8',['barbell ohp','military'],'Smith Press 4x8','shoulder'],
-['Lateral Raise','4x12-15',['lateral','side raise'],'Cable Lateral 4x15','shoulder'],
-['DB Front Raise','3x12',['front raise'],'Plate Raise 3x15','shoulder'],
-['Rear Delt Fly','3x15',['rear delt','reverse fly'],'Face Pull 3x15','shoulder'],
-['Shrug','3x12',['shrug','upright'],'Cable Shrug 3x15','shoulder'],
-['Barbell Curl','3x10',['barbell curl'],'EZ Curl 3x10','bi'],
-['Hammer Curl','3x12',['hammer'],'Rope Curl 3x12','bi'],
-['Rope Pushdown','3x12',['pushdown','rope'],'Bench Dips 3x12','tri'],
-['Cable Crunch','3x15',['cable crunch','crunch'],'Decline Sit-up 3x15','core'],
-['Side Plank','3x30s/s',['side plank'],'Suitcase Carry 3x30m','core']]},
-{k:'back',t:'Back + Lats',ic:'🔺',ex:[
-['Deadlift','4x5',['deadlift'],'Rack Pull 4x6','back'],
-['Weighted / Assisted Pull-up','4x8',['pull up','pullup'],'Lat Pulldown 4x10','back'],
-['Barbell Row','4x8',['barbell row','bb row'],'T-Bar Row 4x10','back'],
-['Lat Pulldown (wide)','3x12',['pulldown','lat pull'],'Straight-arm Pulldown 3x15','back'],
-['Chest-Supported Row','3x10',['csr','chest supported'],'Seated Cable Row 3x12','back'],
-['Straight-arm Pulldown','3x15',['straight arm'],'Pullover 3x15','back'],
-['Rope Pushdown','3x12',['pushdown','rope'],'Bench Dips 3x12','tri'],
-['Overhead Tricep Extension','3x12',['overhead ext','skull'],'Skull Crusher 3x12','tri'],
-['DB Kickback','3x15',['kickback','pushback'],'Cable Kickback 3x15','tri'],
-['Pallof Press','3x12/s',['pallof'],'Anti-rot Hold 3x30s','core'],
-['Dead Bug','3x10/s',['dead bug','deadbug'],'Bird Dog 3x10','core']]},
-{k:'legs',t:'Legs + Biceps',ic:'🦵',ex:[
-['Barbell / Hack Squat','4x6-8',['squat','hack'],'Goblet Squat 4x12','legs'],
-['Leg Press','4x10-12',['leg press'],'Split Squat 4x10','legs'],
-['Romanian Deadlift','4x8',['rdl','romanian'],'Good Morning 4x10','legs'],
-['Bulgarian Split Squat','3x10/leg',['bulgarian','split squat'],'Reverse Lunge 3x12','legs'],
-['Leg Extension','3x15',['leg ext','extension','extn'],'Sissy Squat 3x15','legs'],
-['Lying Leg Curl','3x12',['leg curl','hamstring curl'],'Nordic Curl 3x8','legs'],
-['Barbell Curl','3x10',['barbell curl'],'EZ Curl 3x10','bi'],
-['Hammer Curl','3x12',['hammer'],'Rope Curl 3x12','bi'],
-['Preacher / Cable Curl','3x12',['preacher','cable curl'],'Concentration Curl 3x12','bi'],
-['Hanging Knee Raise','3x15',['hanging','knee raise'],'Lying Leg Raise 3x15','core'],
-['Plank','3x60s',['plank'],'Ab Wheel 3x12','core']]}];
-const DAY={
-2:{n:'Active Rest · Core',ic:'🚶',gym:0,ex:[
-['Brisk walk / bike','30 min',['walk','bike'],'Treadmill 30 min','cardio'],
-['Plank','3x45s',['plank'],'Hollow Hold 3x30s','core'],
-['Dead Bug','3x10/s',['dead bug'],'Bird Dog 3x10','core'],
-['Superman','3x12',['superman'],'Back Extension 3x12','core']]},
-3:{n:'Full Body + Core A',ic:'🏋️',gym:1,ex:[
-['Leg Press','3x12',['leg press'],'Hack Squat 3x12','legs'],
-['Romanian Deadlift','3x10',['rdl','romanian'],'Good Morning 3x10','legs'],
-['Lat Pulldown','3x12',['pulldown','lat pull'],'Assisted Pull-up 3x10','back'],
-['Incline DB Press','3x10',['incline'],'Machine Press 3x12','chest'],
-['Seated DB Shoulder Press','3x10',['shoulder press','ohp'],'Machine Press 3x12','shoulder'],
-['Med Ball Rotational Throw','3x8/s',['med ball','rotational','throw'],'Cable Rotation 3x12','core'],
-['CIRCUIT ×2 · Hanging Leg Raise','x15',['hanging','leg raise'],'Lying Leg Raise x15','core'],
-['CIRCUIT ×2 · Cable Crunch','x15',['cable crunch','crunch'],'Decline Sit-up x15','core'],
-['CIRCUIT ×2 · Plank','60s',['plank'],'Hollow Hold 40s','core'],
-['CIRCUIT ×2 · Russian Twist','x20',['russian','twist'],'Med Ball Twist x20','core'],
-['CIRCUIT ×2 · Mountain Climbers','x30',['mountain','climber'],'High Knees x30','core']]},
+const EXDB=[["Barbell Bench Press","chest","barbell",["barbell bench press","flat bench press","bench press","flat bench","bench"],"4x6-8","DB Flat Press 4x8"],["Incline Barbell Press","chest","barbell",["incline barbell press","incline bench press","incline barbell"],"4x8","Incline DB Press 4x10"],["Decline Barbell Press","chest","barbell",["decline barbell press","decline bench press","decline press","decline bench"],"3x10","Decline Machine Press 3x12"],["Incline DB Press","chest","dumbbell",["incline dumbbell press","incline db press","incline dumbell","incline press","incline"],"4x8-10","Incline Machine 4x10"],["Flat DB Press","chest","dumbbell",["flat dumbbell press","flat db press","dumbbell bench press","db bench press","db press"],"4x10","Barbell Bench 4x8"],["Decline DB Press","chest","dumbbell",["decline dumbbell press","decline db press"],"3x10","Decline Machine 3x12"],["Machine Chest Press","chest","machine",["machine chest press","chest press machine","chest press","seated chest press"],"3x12","DB Flat Press 3x12"],["Incline Machine Press","chest","machine",["incline machine press","incline machine"],"3x12","Incline DB Press 3x10"],["Hammer Strength Press","chest","machine",["hammer strength press","hammer press","plate loaded chest press"],"3x10","Machine Chest Press 3x12"],["Cable Fly","chest","cable",["cable fly","cable flye","cable flies","cable flys"],"3x12","Pec Deck 3x12"],["Cable Crossover","chest","cable",["cable crossover","crossover","cross over"],"3x15","Cable Fly 3x12"],["Low to High Cable Fly","chest","cable",["low to high cable fly","low to high fly","incline cable fly"],"3x12","Cable Fly 3x12"],["High to Low Cable Fly","chest","cable",["high to low cable fly","high to low fly","decline cable fly"],"3x12","Cable Fly 3x12"],["Pec Deck","chest","machine",["pec deck","peck deck","butterfly machine","pec fly machine"],"3x12","Cable Fly 3x12"],["DB Fly","chest","dumbbell",["dumbbell fly","db fly","dumbell fly","flat fly"],"3x12","Cable Fly 3x12"],["Incline DB Fly","chest","dumbbell",["incline dumbbell fly","incline db fly","incline fly"],"3x12","Low to High Cable Fly 3x12"],["Dips (Chest)","chest","bodyweight",["chest dips","dips","dip"],"3x10","Close-grip Press 3x10"],["Push-ups","chest","bodyweight",["push ups","pushups","push up","pushup"],"2 sets","Incline Push-ups 2 sets"],["Incline Push-ups","chest","bodyweight",["incline push ups","incline pushups"],"3x15","Push-ups 3 sets"],["Decline Push-ups","chest","bodyweight",["decline push ups","decline pushups"],"3x12","Push-ups 3 sets"],["Svend Press","chest","other",["svend press","plate press","plate squeeze press"],"3x15","Pec Deck 3x15"],["Landmine Press","chest","barbell",["landmine press","landmine chest press"],"3x10","Incline DB Press 3x10"],["Deadlift","back","barbell",["conventional deadlift","barbell deadlift","deadlift","dead lift"],"4x5","Rack Pull 4x6"],["Trap Bar Deadlift","back","barbell",["trap bar deadlift","hex bar deadlift","trap bar"],"4x6","Deadlift 4x5"],["Rack Pull","back","barbell",["rack pull","rack pulls","block pull"],"3x6","Deadlift 4x5"],["Pull-up","back","bodyweight",["pull ups","pullups","pull up","pullup"],"4x8","Lat Pulldown 4x10"],["Chin-up","back","bodyweight",["chin ups","chinups","chin up","chinup"],"3x8","Close-grip Pulldown 3x10"],["Assisted Pull-up","back","machine",["assisted pull up","assisted pullup","assisted pull ups"],"4x8","Lat Pulldown 4x10"],["Weighted Pull-up","back","bodyweight",["weighted pull up","weighted pullup"],"4x6","Pull-up 4x8"],["Lat Pulldown","back","cable",["lat pulldown","lat pull down","latpulldown","pulldown","lat pull"],"4x10","Assisted Pull-up 4x8"],["Close-grip Pulldown","back","cable",["close grip pulldown","close grip lat pulldown","v bar pulldown"],"3x12","Lat Pulldown 3x12"],["Reverse-grip Pulldown","back","cable",["reverse grip pulldown","underhand pulldown","supinated pulldown"],"3x12","Lat Pulldown 3x12"],["Straight-arm Pulldown","back","cable",["straight arm pulldown","straight arm pull down","stiff arm pulldown"],"3x15","Pullover 3x15"],["Barbell Row","back","barbell",["barbell row","bent over row","bent over barbell row","bb row"],"4x8","T-Bar Row 4x10"],["Pendlay Row","back","barbell",["pendlay row","dead stop row"],"4x6","Barbell Row 4x8"],["T-Bar Row","back","machine",["t bar row","tbar row","t-bar row","landmine row"],"4x10","Barbell Row 4x8"],["Chest-Supported Row","back","machine",["chest supported row","chest supported","csr","incline bench row"],"4x10","Seated Cable Row 3x12"],["Seated Cable Row","back","cable",["seated cable row","seated row","cable row"],"3x12","Chest-Supported Row 3x10"],["Single-arm DB Row","back","dumbbell",["single arm dumbbell row","one arm dumbbell row","db row","dumbbell row","one arm row","single arm row"],"3x10","Seated Cable Row 3x12"],["Meadows Row","back","barbell",["meadows row"],"3x10","Single-arm DB Row 3x10"],["Inverted Row","back","bodyweight",["inverted row","body row","australian pull up"],"3x12","Seated Cable Row 3x12"],["Machine Row","back","machine",["machine row","hammer strength row","plate loaded row"],"3x12","Seated Cable Row 3x12"],["Pullover","back","dumbbell",["dumbbell pullover","db pullover","pullover"],"3x15","Straight-arm Pulldown 3x15"],["Cable Pullover","back","cable",["cable pullover","rope pullover"],"3x15","Straight-arm Pulldown 3x15"],["Barbell Overhead Press","shoulder","barbell",["barbell overhead press","barbell shoulder press","military press","barbell ohp","strict press","overhead press","ohp"],"4x6-8","Smith Press 4x8"],["Seated DB Shoulder Press","shoulder","dumbbell",["seated dumbbell shoulder press","dumbbell shoulder press","db shoulder press","seated shoulder press","shoulder press","dumbbell press"],"4x8","Machine Shoulder Press 4x10"],["Arnold Press","shoulder","dumbbell",["arnold press","arnolds"],"3x10","Seated DB Shoulder Press 3x10"],["Machine Shoulder Press","shoulder","machine",["machine shoulder press","shoulder press machine","seated machine press"],"3x12","Seated DB Shoulder Press 3x10"],["Smith Machine Press","shoulder","machine",["smith machine shoulder press","smith press","smith shoulder press"],"4x8","Barbell Overhead Press 4x8"],["Push Press","shoulder","barbell",["push press"],"4x5","Barbell Overhead Press 4x6"],["Lateral Raise","shoulder","dumbbell",["dumbbell lateral raise","lateral raise","side lateral raise","side raise","lat raise","laterals"],"4x12-15","Cable Lateral Raise 4x15"],["Cable Lateral Raise","shoulder","cable",["cable lateral raise","cable side raise","cable lateral"],"3x15","Lateral Raise 3x15"],["Machine Lateral Raise","shoulder","machine",["machine lateral raise","lateral raise machine"],"3x15","Lateral Raise 3x15"],["Leaning Lateral Raise","shoulder","dumbbell",["leaning lateral raise","leaning laterals"],"3x15","Lateral Raise 3x15"],["DB Front Raise","shoulder","dumbbell",["dumbbell front raise","db front raise","front raise"],"3x12","Plate Front Raise 3x15"],["Plate Front Raise","shoulder","other",["plate front raise","plate raise"],"3x15","DB Front Raise 3x12"],["Cable Front Raise","shoulder","cable",["cable front raise"],"3x15","DB Front Raise 3x12"],["Upright Row","shoulder","barbell",["upright row","upright rows","barbell upright row","high pull"],"3x12","Cable Upright Row 3x15"],["Cable Upright Row","shoulder","cable",["cable upright row","rope upright row"],"3x15","Upright Row 3x12"],["DB Upright Row","shoulder","dumbbell",["dumbbell upright row","db upright row"],"3x12","Upright Row 3x12"],["Rear Delt Fly","shoulder","dumbbell",["rear delt fly","reverse fly","rear delt raise","rear laterals","bent over lateral raise"],"3x15","Face Pull 3x15"],["Reverse Pec Deck","shoulder","machine",["reverse pec deck","rear delt machine","reverse fly machine"],"3x15","Rear Delt Fly 3x15"],["Cable Rear Delt Fly","shoulder","cable",["cable rear delt fly","cable reverse fly","rear delt cable"],"3x15","Rear Delt Fly 3x15"],["Face Pull","cuff","cable",["face pull","face pulls","rope face pull"],"3x15","Band Pull-apart 3x20"],["Band Pull-apart","shoulder","band",["band pull apart","band pullapart","pull apart"],"3x20","Face Pull 3x15"],["Barbell Shrug","shoulder","barbell",["barbell shrug","shrug","shrugs","traps"],"3x12","DB Shrug 3x15"],["DB Shrug","shoulder","dumbbell",["dumbbell shrug","db shrug"],"3x15","Barbell Shrug 3x12"],["Cable Shrug","shoulder","cable",["cable shrug"],"3x15","DB Shrug 3x15"],["Landmine Lateral Raise","shoulder","barbell",["landmine lateral raise","landmine raise"],"3x12","Lateral Raise 3x15"],["Barbell Curl","bi","barbell",["barbell curl","straight bar curl","bb curl"],"3x10","EZ Bar Curl 3x10"],["EZ Bar Curl","bi","barbell",["ez bar curl","ez curl","ezbar curl"],"3x10","Barbell Curl 3x10"],["DB Curl","bi","dumbbell",["dumbbell curl","db curl","dumbell curl","bicep curl","biceps curl","curl"],"3x12","Barbell Curl 3x10"],["Alternating DB Curl","bi","dumbbell",["alternating dumbbell curl","alternate curl","alternating curl"],"3x12","DB Curl 3x12"],["Hammer Curl","bi","dumbbell",["hammer curl","hammer curls","hammers","neutral grip curl"],"3x12","Rope Hammer Curl 3x12"],["Rope Hammer Curl","bi","cable",["rope hammer curl","rope curl","cable hammer curl"],"3x12","Hammer Curl 3x12"],["Preacher Curl","bi","machine",["preacher curl","preacher curls","preacher","scott curl"],"3x12","Concentration Curl 3x12"],["Machine Preacher Curl","bi","machine",["machine preacher curl","preacher machine","bicep curl machine","machine curl"],"3x12","Preacher Curl 3x12"],["Incline DB Curl","bi","dumbbell",["incline dumbbell curl","incline curl","incline bicep curl"],"3x12","DB Curl 3x12"],["Concentration Curl","bi","dumbbell",["concentration curl","concentration curls"],"3x12","Preacher Curl 3x12"],["Cable Curl","bi","cable",["cable curl","cable bicep curl","low pulley curl"],"3x12","DB Curl 3x12"],["Spider Curl","bi","dumbbell",["spider curl","spider curls"],"3x12","Preacher Curl 3x12"],["Zottman Curl","bi","dumbbell",["zottman curl"],"3x12","Hammer Curl 3x12"],["Reverse Curl","bi","barbell",["reverse curl","reverse grip curl","pronated curl"],"3x15","Reverse Cable Curl 3x15"],["Reverse Cable Curl","bi","cable",["reverse cable curl"],"3x15","Reverse Curl 3x15"],["21s","bi","barbell",["21s","twenty ones","21 curls"],"3 sets","Barbell Curl 3x10"],["Rope Pushdown","tri","cable",["rope pushdown","rope tricep pushdown","rope push down","tricep pushdown","pushdown","push down"],"3x12","Bar Pushdown 3x12"],["Bar Pushdown","tri","cable",["bar pushdown","straight bar pushdown","v bar pushdown"],"3x12","Rope Pushdown 3x12"],["Overhead Tricep Extension","tri","dumbbell",["overhead tricep extension","overhead extension","overhead tricep","dumbbell overhead extension"],"3x12","Rope Overhead Extension 3x12"],["Rope Overhead Extension","tri","cable",["rope overhead extension","cable overhead extension","overhead rope extension"],"3x12","Overhead Tricep Extension 3x12"],["Skull Crusher","tri","barbell",["skull crusher","skullcrusher","skull crushers","lying tricep extension","french press"],"3x12","Overhead Tricep Extension 3x12"],["DB Kickback","tri","dumbbell",["dumbbell kickback","db kickback","tricep kickback","kickback","pushback","push back","dumbbell pushback"],"3x15","Cable Kickback 3x15"],["Cable Kickback","tri","cable",["cable kickback","cable tricep kickback"],"3x15","DB Kickback 3x15"],["Close-grip Bench Press","tri","barbell",["close grip bench press","close grip bench","close grip press","cgbp"],"3x10","Dips (Triceps) 3x10"],["Dips (Triceps)","tri","bodyweight",["tricep dips","triceps dips","parallel bar dips"],"3x10","Bench Dips 3x12"],["Bench Dips","tri","bodyweight",["bench dips","bench dip"],"3x12","Dips (Triceps) 3x10"],["Diamond Push-ups","tri","bodyweight",["diamond push ups","diamond pushups","close grip push ups"],"3x12","Bench Dips 3x12"],["Single-arm Pushdown","tri","cable",["single arm pushdown","one arm pushdown","single arm tricep"],"3x15","Rope Pushdown 3x12"],["JM Press","tri","barbell",["jm press"],"3x10","Close-grip Bench Press 3x10"],["Machine Tricep Extension","tri","machine",["machine tricep extension","tricep extension machine","tricep machine"],"3x12","Rope Pushdown 3x12"],["Barbell Back Squat","legs","barbell",["barbell back squat","back squat","barbell squat","squat","squats"],"4x6-8","Hack Squat 4x8"],["Front Squat","legs","barbell",["front squat","front squats"],"4x8","Barbell Back Squat 4x8"],["Hack Squat","legs","machine",["hack squat","hack squats","hack machine"],"4x8-10","Leg Press 4x12"],["Pendulum Squat","legs","machine",["pendulum squat"],"4x10","Hack Squat 4x10"],["Smith Machine Squat","legs","machine",["smith machine squat","smith squat"],"4x10","Hack Squat 4x10"],["Goblet Squat","legs","dumbbell",["goblet squat","goblet squats","goblet"],"3x12","Barbell Back Squat 3x10"],["Leg Press","legs","machine",["leg press","legpress","45 degree leg press"],"4x10-12","Hack Squat 4x10"],["Single-leg Press","legs","machine",["single leg press","one leg press","unilateral leg press"],"3x12","Bulgarian Split Squat 3x10"],["Bulgarian Split Squat","legs","dumbbell",["bulgarian split squat","bulgarian","split squat","rear foot elevated split squat","rfess"],"3x10/leg","Reverse Lunge 3x12"],["Walking Lunge","legs","dumbbell",["walking lunge","walking lunges","lunges","lunge"],"3x12/leg","Reverse Lunge 3x12"],["Reverse Lunge","legs","dumbbell",["reverse lunge","reverse lunges","backward lunge"],"3x12/leg","Walking Lunge 3x12"],["Step-up","legs","dumbbell",["step up","step ups","box step up"],"3x12/leg","Reverse Lunge 3x12"],["Leg Extension","legs","machine",["leg extension","leg extensions","leg ext","quad extension","knee extension"],"3x15","Sissy Squat 3x15"],["Sissy Squat","legs","bodyweight",["sissy squat","sissy squats"],"3x12","Leg Extension 3x15"],["Romanian Deadlift","legs","barbell",["romanian deadlift","rdl","rdls","romanian dead lift","stiff leg deadlift"],"4x8","Good Morning 3x10"],["DB Romanian Deadlift","legs","dumbbell",["dumbbell romanian deadlift","dumbbell rdl","db rdl"],"3x10","Romanian Deadlift 4x8"],["Good Morning","legs","barbell",["good morning","good mornings"],"3x10","Romanian Deadlift 3x8"],["Lying Leg Curl","legs","machine",["lying leg curl","leg curl","hamstring curl","prone leg curl"],"3x12","Seated Leg Curl 3x12"],["Seated Leg Curl","legs","machine",["seated leg curl","seated hamstring curl"],"3x12","Lying Leg Curl 3x12"],["Nordic Curl","legs","bodyweight",["nordic curl","nordic hamstring curl","nordics"],"3x8","Lying Leg Curl 3x12"],["Hip Thrust","legs","barbell",["hip thrust","hip thrusts","barbell hip thrust","glute bridge barbell"],"3x12","Glute Bridge 3x15"],["Glute Bridge","legs","bodyweight",["glute bridge","glute bridges","bridge"],"3x15","Hip Thrust 3x12"],["Machine Hip Thrust","legs","machine",["machine hip thrust","hip thrust machine"],"3x12","Hip Thrust 3x12"],["Cable Pull-through","legs","cable",["cable pull through","pull through"],"3x15","Hip Thrust 3x12"],["Glute Kickback (Cable)","legs","cable",["cable glute kickback","glute kickback","cable kickback glute","donkey kick"],"3x15/leg","Glute Bridge 3x15"],["Sumo Deadlift","legs","barbell",["sumo deadlift","sumo dead lift"],"4x6","Romanian Deadlift 4x8"],["Belt Squat","legs","machine",["belt squat"],"3x12","Hack Squat 3x10"],["Hip Abduction Machine","abd","machine",["hip abduction","abduction machine","abductor","abductors","abduction"],"3x15","Band Lateral Walk 3x15"],["Hip Adduction Machine","add","machine",["hip adduction","adduction machine","adductor","adductors","adduction","inner thigh machine"],"3x15","Copenhagen Plank 3x20s"],["Band Lateral Walk","abd","band",["band lateral walk","monster walk","lateral band walk","crab walk"],"3x15","Hip Abduction Machine 3x15"],["Copenhagen Plank","add","bodyweight",["copenhagen plank","copenhagen"],"3x20s","Hip Adduction Machine 3x15"],["Clamshell","abd","band",["clamshell","clam shell"],"3x15/side","Band Lateral Walk 3x15"],["Standing Calf Raise","calf","machine",["standing calf raise","calf raise","calf raises","calves"],"4x15","Seated Calf Raise 4x15"],["Seated Calf Raise","calf","machine",["seated calf raise","seated calves","soleus raise"],"4x15","Standing Calf Raise 4x15"],["Leg Press Calf Raise","calf","machine",["leg press calf raise","calf press"],"4x15","Standing Calf Raise 4x15"],["Donkey Calf Raise","calf","machine",["donkey calf raise"],"3x15","Standing Calf Raise 4x15"],["Tibialis Raise","calf","bodyweight",["tibialis raise","tib raise","toe raise","shin raise"],"3x20","Heel Walk 2x30m"],["Heel Walk","calf","bodyweight",["heel walk","heel walks"],"2x30m","Tibialis Raise 3x20"],["Wrist Curl","wrist","dumbbell",["wrist curl","wrist curls","forearm curl"],"3x15","Reverse Wrist Curl 3x15"],["Reverse Wrist Curl","wrist","dumbbell",["reverse wrist curl","wrist extension"],"3x15","Wrist Curl 3x15"],["Farmer Carry","wrist","dumbbell",["farmer carry","farmers carry","farmer walk","farmers walk"],"3x40m","Suitcase Carry 3x30m"],["Suitcase Carry","wrist","dumbbell",["suitcase carry","suitcase walk"],"3x30m","Farmer Carry 3x40m"],["Plate Pinch","wrist","other",["plate pinch","pinch grip"],"3x30s","Farmer Carry 3x40m"],["Dead Hang","wrist","bodyweight",["dead hang","deadhang","bar hang"],"3x30s","Farmer Carry 3x40m"],["Wrist Roller","wrist","other",["wrist roller","forearm roller"],"3 sets","Wrist Curl 3x15"],["Neck Curl","neck","bodyweight",["neck curl","neck flexion"],"3x15","Neck Isometric 3x30s"],["Neck Extension","neck","bodyweight",["neck extension"],"3x15","Neck Isometric 3x30s"],["Neck Isometric","neck","bodyweight",["neck isometric","neck hold"],"3x30s","Neck Curl 3x15"],["Serratus Punch","serr","cable",["serratus punch","serratus","scapular punch"],"3x15","Wall Slide 3x12"],["Wall Slide","serr","bodyweight",["wall slide","wall slides","scapular wall slide"],"3x12","Serratus Punch 3x15"],["Scapular Pull-up","serr","bodyweight",["scapular pull up","scap pull up","scapular retraction"],"3x10","Wall Slide 3x12"],["External Rotation (Cable)","cuff","cable",["external rotation","cable external rotation","rotator cuff external"],"3x15","Band External Rotation 3x15"],["Band External Rotation","cuff","band",["band external rotation","band rotator cuff"],"3x15","External Rotation (Cable) 3x15"],["Internal Rotation (Cable)","cuff","cable",["internal rotation","cable internal rotation"],"3x15","Band External Rotation 3x15"],["Cuban Press","cuff","dumbbell",["cuban press","cuban rotation"],"3x12","Band External Rotation 3x15"],["Hip Flexor Raise","hipf","bodyweight",["hip flexor raise","standing knee raise","hip flexor march"],"3x15/side","Dead Bug 3x10"],["Banded Hip Flexor March","hipf","band",["banded march","hip flexor march band","banded hip flexor"],"3x15/side","Hip Flexor Raise 3x15"],["Plank","core","bodyweight",["plank","front plank","forearm plank"],"3x45-60s","Hollow Hold 3x40s"],["Side Plank","core","bodyweight",["side plank","side planks"],"3x30s/side","Copenhagen Plank 3x20s"],["Hollow Hold","core","bodyweight",["hollow hold","hollow body hold","hollow"],"3x30s","Plank 3x60s"],["Hanging Leg Raise","core","bodyweight",["hanging leg raise","hanging leg raises","hanging leg"],"3x15","Lying Leg Raise 3x15"],["Hanging Knee Raise","core","bodyweight",["hanging knee raise","knee raise","knee raises"],"3x15","Lying Leg Raise 3x15"],["Lying Leg Raise","core","bodyweight",["lying leg raise","leg raise","leg raises","flat leg raise"],"3x15","Reverse Crunch 3x15"],["Reverse Crunch","core","bodyweight",["reverse crunch","reverse crunches"],"3x15","Lying Leg Raise 3x15"],["Cable Crunch","core","cable",["cable crunch","cable crunches","kneeling cable crunch","rope crunch"],"3x15","Decline Sit-up 3x15"],["Decline Sit-up","core","bodyweight",["decline sit up","decline situp","decline crunch"],"3x15","Cable Crunch 3x15"],["Crunch","core","bodyweight",["crunch","crunches","sit up","situp","sit ups"],"3x20","Cable Crunch 3x15"],["Russian Twist","core","other",["russian twist","russian twists","seated twist"],"3x20","Med Ball Twist 3x20"],["Med Ball Twist","core","other",["med ball twist","medicine ball twist","med ball rotation"],"3x20","Russian Twist 3x20"],["Cable Woodchop","core","cable",["cable woodchop","woodchop","wood chop","chop"],"3x12/side","Med Ball Twist 3x20"],["Pallof Press","core","cable",["pallof press","pallof","anti rotation press"],"3x12/side","Anti-rotation Hold 3x30s"],["Anti-rotation Hold","core","cable",["anti rotation hold","pallof hold"],"3x30s/side","Pallof Press 3x12"],["Dead Bug","core","bodyweight",["dead bug","deadbug","dead bugs"],"3x10/side","Bird Dog 3x10"],["Bird Dog","core","bodyweight",["bird dog","birddog"],"3x10/side","Dead Bug 3x10"],["Ab Wheel Rollout","core","other",["ab wheel","ab roller","rollout","ab wheel rollout"],"3x12","Plank 3x60s"],["Mountain Climbers","core","bodyweight",["mountain climbers","mountain climber"],"3x30","High Knees 3x30"],["High Knees","core","bodyweight",["high knees"],"3x30","Mountain Climbers 3x30"],["Superman","core","bodyweight",["superman","supermans","superman hold"],"3x12","Back Extension 3x12"],["Back Extension","core","machine",["back extension","hyperextension","hyper extension","45 degree back extension"],"3x12","Superman 3x12"],["Reverse Hyper","core","machine",["reverse hyper","reverse hyperextension"],"3x15","Back Extension 3x12"],["Cobra Arch","core","bodyweight",["cobra arch","cobra","cobra pose","prone press up"],"3x20s","Superman 3x12"],["Bicycle Crunch","core","bodyweight",["bicycle crunch","bicycle crunches","bicycles"],"3x20","Russian Twist 3x20"],["Toe Touch","core","bodyweight",["toe touch","toe touches"],"3x20","Crunch 3x20"],["V-Up","core","bodyweight",["v up","v ups","vups"],"3x15","Hollow Hold 3x30s"],["Flutter Kicks","core","bodyweight",["flutter kicks","flutter kick"],"3x30","Lying Leg Raise 3x15"],["Med Ball Rotational Throw","core","other",["med ball rotational throw","medicine ball throw","rotational throw","med ball slam rotation"],"3x8/side","Cable Woodchop 3x12"],["Med Ball Slam","core","other",["med ball slam","medicine ball slam","ball slam","slams"],"3x12","Med Ball Rotational Throw 3x8"],["Kettlebell Swing","legs","kettlebell",["kettlebell swing","kb swing","kettlebell swings","swings"],"3x15","Hip Thrust 3x12"],["Box Jump","legs","bodyweight",["box jump","box jumps"],"3x8","Jump Squat 3x10"],["Jump Squat","legs","bodyweight",["jump squat","jump squats","squat jump"],"3x10","Box Jump 3x8"],["Battle Ropes","cardio","other",["battle ropes","battle rope","ropes"],"3x30s","Assault Bike 3x60s"],["Sled Push","cardio","other",["sled push","prowler push","sled"],"4x20m","Battle Ropes 3x30s"],["Incline Treadmill Walk","cardio","machine",["incline treadmill","incline walk","treadmill walk","treadmill"],"25 min","Brisk Walk 30 min"],["Stairmaster","cardio","machine",["stairmaster","stair master","stair climber","stairs"],"20 min","Incline Treadmill Walk 25 min"],["Stationary Bike","cardio","machine",["stationary bike","exercise bike","cycling","bike","cycle"],"25 min","Elliptical 25 min"],["Rowing Machine","cardio","machine",["rowing machine","rower","erg","rowing"],"20 min","Stationary Bike 25 min"],["Elliptical","cardio","machine",["elliptical","cross trainer"],"25 min","Stationary Bike 25 min"],["Assault Bike","cardio","machine",["assault bike","air bike","airdyne"],"15 min","Stationary Bike 20 min"],["Brisk Walk","cardio","none",["brisk walk","walk","walking","outdoor walk"],"30 min","Incline Treadmill Walk 25 min"],["Jog / Run","cardio","none",["jog","jogging","run","running"],"20 min","Brisk Walk 30 min"],["Skipping","cardio","other",["skipping","jump rope","rope skipping","skip"],"10 min","Assault Bike 15 min"],["Cricket Match","cardio","none",["cricket match","cricket","match"],"play","Net Practice"],["Swimming","cardio","none",["swimming","swim","pool"],"30 min","Brisk Walk 30 min"]];
+const FOODDB=[["Idli","3 pcs",120,117,3.9,25.2,0.3,1.8,"tiffin",["idli","idly","idlis","idlies"]],["Rava Idli","2 pcs",130,158,4.2,28.0,3.2,1.5,"tiffin",["rava idli","rawa idli"]],["Plain Dosa","1 medium",90,168,3.6,29.0,4.0,1.2,"tiffin",["plain dosa","dosa","dosai","thosai"]],["Masala Dosa","1 pc",180,290,5.5,45.0,9.5,3.0,"tiffin",["masala dosa","masaala dosa"]],["Ghee Roast Dosa","1 pc",120,290,4.2,36.0,14.0,1.5,"tiffin",["ghee roast","ghee dosa","ghee roast dosa"]],["Ragi Dosa","2 pcs",160,220,5.2,38.0,5.0,4.5,"tiffin",["ragi dosa","finger millet dosa"]],["Foxtail Millet Dosa","2 pcs",160,215,5.8,37.0,4.5,4.8,"tiffin",["foxtail millet dosa","thinai dosa","millet dosa"]],["Adai","2 pcs",150,300,12.5,40.0,9.0,6.5,"tiffin",["adai","adhai","lentil dosa"]],["Uthappam","1 pc",130,210,5.0,34.0,6.0,2.5,"tiffin",["uthappam","uttapam","oothappam"]],["Neer Dosa","3 pcs",150,180,3.2,35.0,3.0,1.0,"tiffin",["neer dosa"]],["Set Dosa","2 pcs",140,215,4.5,36.0,5.5,1.6,"tiffin",["set dosa"]],["Ven Pongal","1 cup",200,300,7.5,45.0,10.0,2.5,"tiffin",["ven pongal","pongal","khara pongal"]],["Sakkarai Pongal","1 cup",180,390,5.5,62.0,13.0,2.0,"tiffin",["sakkarai pongal","sweet pongal","chakkarai pongal"]],["Rava Upma","1 cup",200,270,6.0,42.0,8.5,3.0,"tiffin",["rava upma","upma","uppuma","uppittu"]],["Millet Upma","1 cup",200,250,6.8,40.0,7.0,5.5,"tiffin",["millet upma","samai upma"]],["Idiyappam","3 pcs",150,200,3.6,44.0,0.8,1.5,"tiffin",["idiyappam","string hoppers","idiappam"]],["Appam","2 pcs",140,190,3.4,38.0,3.0,1.2,"tiffin",["appam","aappam","palappam"]],["Puttu","1 cup",180,230,4.5,45.0,3.5,3.0,"tiffin",["puttu","pittu"]],["Medu Vada","2 pcs",90,270,7.5,26.0,15.0,4.0,"tiffin",["medu vada","vada","vadai","ulundu vadai"]],["Masala Vada","2 pcs",80,240,8.5,24.0,12.0,5.0,"tiffin",["masala vada","paruppu vadai"]],["Poori","2 pcs",80,290,5.0,34.0,15.0,1.8,"tiffin",["poori","puri","poories"]],["Chapati","2 pcs",80,240,7.2,42.0,5.0,5.0,"tiffin",["chapati","chappathi","roti","phulka","chapathi"]],["Parotta","1 pc",100,330,6.0,44.0,14.0,1.8,"tiffin",["parotta","porotta","malabar parotta"]],["Wheat Dosa","2 pcs",150,230,6.0,38.0,6.0,4.0,"tiffin",["wheat dosa","godhumai dosa"]],["Kuzhi Paniyaram","5 pcs",120,215,5.0,32.0,7.5,2.0,"tiffin",["paniyaram","kuzhi paniyaram","appe"]],["Semiya Upma","1 cup",200,265,5.5,44.0,7.5,2.0,"tiffin",["semiya upma","vermicelli upma"]],["Aval Upma","1 cup",180,240,4.5,42.0,6.0,2.5,"tiffin",["aval upma","poha","avil"]],["White Rice","1 cup cooked",150,195,4.0,43.0,0.4,0.6,"rice",["white rice","plain rice","steamed rice","rice","saadam","sadam"]],["Brown Rice","1 cup cooked",150,165,3.8,34.0,1.3,2.8,"rice",["brown rice"]],["Millet Rice","1 cup cooked",150,160,4.8,32.0,1.5,4.5,"rice",["millet rice","samai rice","varagu"]],["Curd Rice","1 cup",250,255,7.5,40.0,7.0,1.0,"rice",["curd rice","thayir sadam","yogurt rice"]],["Lemon Rice","1 cup",200,290,5.0,48.0,8.5,2.0,"rice",["lemon rice","elumichai sadam"]],["Tamarind Rice","1 cup",200,320,5.5,50.0,10.0,2.5,"rice",["tamarind rice","puliyodharai","puliyogare","pulihora"]],["Tomato Rice","1 cup",200,300,5.2,48.0,9.0,2.5,"rice",["tomato rice","thakkali sadam"]],["Coconut Rice","1 cup",200,340,5.0,46.0,14.0,3.0,"rice",["coconut rice","thengai sadam"]],["Bisi Bele Bath","1 cup",250,340,9.5,52.0,10.0,5.5,"rice",["bisi bele bath","bisibelebath","bisi bela"]],["Vegetable Pulao","1 cup",220,320,6.5,50.0,10.0,3.5,"rice",["vegetable pulao","veg pulao","pulao","pulav"]],["Chicken Biryani","1 plate",350,600,28.0,72.0,22.0,3.0,"rice",["chicken biryani","biryani","biriyani","chicken biriyani"]],["Mutton Biryani","1 plate",350,680,30.0,72.0,29.0,3.0,"rice",["mutton biryani","mutton biriyani"]],["Veg Biryani","1 plate",320,480,10.0,72.0,17.0,5.0,"rice",["veg biryani","vegetable biryani"]],["Egg Fried Rice","1 cup",250,380,12.5,52.0,13.0,2.5,"rice",["egg fried rice","fried rice"]],["Beetroot Rice","1 cup",200,280,5.5,45.0,8.5,4.0,"rice",["beetroot rice","beet rice"]],["Ghee Rice","1 cup",200,340,4.5,48.0,14.0,1.0,"rice",["ghee rice","nei sadam"]],["Sambar","1 ladle",150,110,4.8,15.0,3.2,3.5,"gravy",["sambar","sambhar","saambar"]],["Rasam","1 ladle",150,45,1.8,6.5,1.2,1.0,"gravy",["rasam","charu","saaru"]],["Vathal Kuzhambu","1 ladle",120,120,2.0,12.0,7.0,2.0,"gravy",["vathal kuzhambu","vatha kuzhambu"]],["Mor Kuzhambu","1 ladle",150,130,4.5,10.0,8.0,1.5,"gravy",["mor kuzhambu","moru kuzhambu","buttermilk kuzhambu"]],["Puli Kuzhambu","1 ladle",150,135,2.5,14.0,8.0,2.2,"gravy",["puli kuzhambu","kara kuzhambu"]],["Toor Dal","1 cup",180,190,10.5,26.0,4.5,7.0,"gravy",["toor dal","thuvaram paruppu","dal","daal","paruppu"]],["Moong Dal","1 cup",180,175,11.5,24.0,3.5,7.5,"gravy",["moong dal","pasi paruppu","yellow dal"]],["Dal Fry","1 cup",180,230,10.0,26.0,9.0,7.0,"gravy",["dal fry","dal tadka"]],["Chana Masala","1 cup",200,290,13.0,38.0,9.5,10.0,"gravy",["chana masala","chole","chickpea curry","channa"]],["Rajma","1 cup",200,280,13.5,40.0,7.5,11.0,"gravy",["rajma","kidney bean curry"]],["Kadala Curry","1 cup",200,270,12.5,36.0,8.5,9.5,"gravy",["kadala curry","black chana curry"]],["Vegetable Stew","1 cup",200,190,4.0,18.0,11.5,3.5,"gravy",["vegetable stew","veg stew","stew","ishtu"]],["Kootu","1 cup",180,150,6.5,18.0,5.5,5.5,"gravy",["kootu","koottu"]],["Aviyal","1 cup",180,195,4.5,15.0,13.0,4.5,"gravy",["aviyal","avial"]],["Paneer Butter Masala","1 cup",200,420,16.0,18.0,32.0,3.0,"gravy",["paneer butter masala","paneer makhani","butter paneer"]],["Palak Paneer","1 cup",200,320,15.0,14.0,23.0,4.5,"gravy",["palak paneer","spinach paneer"]],["Kadai Paneer","1 cup",200,350,15.5,16.0,25.0,3.5,"gravy",["kadai paneer"]],["Soya Chunk Curry","1 cup",200,260,22.0,20.0,10.0,7.0,"gravy",["soya chunk curry","meal maker curry","soya curry"]],["Chicken Curry","1 cup",180,290,30.0,8.0,15.0,1.5,"nonveg",["chicken curry","chicken kuzhambu","chicken gravy"]],["Chicken Chettinad","1 cup",180,320,31.0,9.0,17.5,2.0,"nonveg",["chicken chettinad","chettinad chicken"]],["Pepper Chicken","1 cup",170,280,32.0,6.0,14.0,1.2,"nonveg",["pepper chicken","milagu chicken"]],["Chicken 65","6 pcs",150,380,26.0,18.0,23.0,1.0,"nonveg",["chicken 65","chicken sixty five"]],["Grilled Chicken Breast","150 g",150,248,46.5,0.0,5.4,0.0,"nonveg",["grilled chicken","chicken breast","grilled chicken breast"]],["Tandoori Chicken","2 pcs",200,320,42.0,4.0,14.0,0.5,"nonveg",["tandoori chicken","tandoori"]],["Chicken Fry (Varuval)","1 cup",150,340,30.0,8.0,21.0,1.5,"nonveg",["chicken varuval","chicken fry","chicken roast"]],["Fish Curry","1 cup",180,230,26.0,7.0,11.0,1.2,"nonveg",["fish curry","meen kuzhambu","fish gravy"]],["Fish Fry","2 pcs",150,290,28.0,9.0,16.0,0.8,"nonveg",["fish fry","meen varuval","fried fish"]],["Grilled Fish","150 g",150,220,32.0,0.0,10.0,0.0,"nonveg",["grilled fish","fish grill"]],["Prawn Masala","1 cup",180,240,26.0,8.0,11.0,1.0,"nonveg",["prawn masala","prawn curry","eral"]],["Mutton Curry","1 cup",180,380,28.0,7.0,27.0,1.2,"nonveg",["mutton curry","mutton kuzhambu","mutton gravy"]],["Mutton Chukka","1 cup",160,400,30.0,6.0,29.0,1.5,"nonveg",["mutton chukka","mutton varuval","mutton fry"]],["Egg Curry","2 eggs",200,280,14.5,9.0,20.0,1.5,"nonveg",["egg curry","muttai kuzhambu"]],["Egg Roast","2 eggs",180,270,14.0,8.0,19.5,1.5,"nonveg",["egg roast","egg masala"]],["Boiled Egg","2 pcs",100,155,12.6,1.1,10.6,0.0,"nonveg",["boiled egg","boiled eggs","egg","eggs"]],["Egg Omelette","2 eggs",120,220,13.5,2.0,17.0,0.3,"nonveg",["omelette","omlet","omelet","egg omelette"]],["Egg White Omelette","4 whites",140,90,17.0,2.0,0.5,0.2,"nonveg",["egg white omelette","egg whites","egg white"]],["Egg Bhurji","2 eggs",150,250,14.0,5.0,19.0,1.0,"nonveg",["egg bhurji","scrambled egg","bhurji"]],["Chicken Shawarma","1 roll",250,520,32.0,48.0,22.0,3.5,"nonveg",["shawarma","chicken shawarma"]],["Beans Poriyal","1 cup",120,95,3.2,11.0,4.5,4.5,"side",["beans poriyal","beans curry","beans"]],["Cabbage Poriyal","1 cup",120,85,2.5,10.0,4.2,3.8,"side",["cabbage poriyal","cabbage"]],["Carrot Poriyal","1 cup",120,100,1.8,13.0,4.5,3.5,"side",["carrot poriyal","carrot"]],["Beetroot Poriyal","1 cup",120,110,2.2,15.0,4.5,3.8,"side",["beetroot poriyal","beetroot"]],["Keerai Masiyal","1 cup",150,90,4.5,8.0,4.0,4.5,"side",["keerai","keerai masiyal","spinach","palak","greens"]],["Cauliflower Poriyal","1 cup",120,95,3.0,10.0,4.8,3.5,"side",["cauliflower poriyal","cauliflower","gobi"]],["Ladies Finger Poriyal","1 cup",120,105,2.5,11.0,5.5,4.0,"side",["ladies finger","bhindi","vendakkai","okra"]],["Potato Fry","1 cup",120,190,2.5,26.0,8.5,3.0,"side",["potato fry","urulai varuval","aloo fry","potato"]],["Mixed Veg Poriyal","1 cup",120,100,3.0,12.0,4.5,4.2,"side",["mixed veg poriyal","poriyal","vegetable poriyal"]],["Drumstick Poriyal","1 cup",120,90,3.5,10.0,4.0,4.8,"side",["drumstick","murungakkai"]],["Sprouts Sundal","1 cup",150,180,11.0,24.0,4.5,8.0,"side",["sundal","sprouts sundal","kondakadalai sundal","sprouts"]],["Boiled Chana","1 cup",150,240,12.5,32.0,4.0,9.5,"side",["boiled chana","boiled channa","chana","chickpeas"]],["Curd","1 bowl",150,90,5.0,6.5,4.5,0.0,"dairy",["curd","yogurt","thayir","dahi"]],["Greek Yogurt","1 cup",150,130,15.0,7.0,4.5,0.0,"dairy",["greek yogurt","hung curd"]],["Buttermilk","1 glass",200,55,3.0,6.0,1.8,0.0,"dairy",["buttermilk","mor","chaas"]],["Milk","1 glass",200,120,6.4,9.6,6.4,0.0,"dairy",["milk","paal"]],["Paneer","100 g",100,265,18.0,3.5,20.0,0.0,"dairy",["paneer","cottage cheese"]],["Whey Protein","1 scoop",30,120,24.0,3.0,1.5,0.5,"dairy",["whey protein","whey","protein shake","protein powder"]],["Filter Coffee","1 cup",150,90,3.0,11.0,3.5,0.0,"drink",["filter coffee","coffee","kaapi"]],["Black Coffee","1 cup",150,5,0.3,0.5,0.0,0.0,"drink",["black coffee"]],["Tea","1 cup",150,70,2.0,9.0,2.8,0.0,"drink",["tea","chai"]],["Green Tea","1 cup",200,2,0.0,0.4,0.0,0.0,"drink",["green tea"]],["Beer","1 pint 500ml",500,215,1.8,17.5,0.0,0.0,"drink",["beer","pint"]],["Tender Coconut","1 pc",300,60,0.7,13.0,0.2,1.0,"drink",["tender coconut","elaneer","coconut water"]],["Fresh Lime Soda","1 glass",250,90,0.2,22.0,0.0,0.2,"drink",["lime soda","nimbu soda","fresh lime"]],["Coconut Chutney","2 tbsp",40,90,1.5,3.5,7.8,1.8,"chutney",["coconut chutney","thengai chutney","chutney"]],["Peanut Chutney","2 tbsp",40,105,4.2,5.0,7.5,1.8,"chutney",["peanut chutney","verkadalai chutney"]],["Tomato Chutney","2 tbsp",40,45,1.0,5.5,2.2,1.2,"chutney",["tomato chutney","thakkali chutney"]],["Mint Coriander Chutney","2 tbsp",40,35,1.2,4.0,1.5,1.5,"chutney",["mint chutney","coriander chutney","pudina chutney","green chutney"]],["Milagai Podi + Oil","1 tbsp",20,95,3.0,6.0,6.5,2.0,"chutney",["milagai podi","idli podi","gunpowder","podi"]],["Pickle","1 tbsp",15,45,0.3,2.0,4.0,0.5,"chutney",["pickle","oorugai","achar"]],["Papad","1 pc",12,45,2.2,6.5,1.2,1.0,"chutney",["papad","appalam","pappadam"]],["Peanuts (roasted)","30 g",30,170,7.6,5.0,14.0,2.5,"snack",["peanuts","roasted peanuts","verkadalai","groundnut"]],["Almonds","20 g",20,116,4.2,4.3,10.0,2.5,"snack",["almonds","badam"]],["Roasted Chana","30 g",30,110,6.5,17.0,1.5,5.0,"snack",["roasted chana","pottukadalai","roasted gram"]],["Mixture","30 g",30,165,3.5,15.0,10.0,1.5,"snack",["mixture","kara boondi","namkeen"]],["Murukku","2 pcs",40,200,3.5,20.0,12.0,1.5,"snack",["murukku","chakli"]],["Banana","1 medium",120,105,1.3,27.0,0.4,3.1,"snack",["banana","vazhaipazham"]],["Apple","1 medium",180,95,0.5,25.0,0.3,4.4,"snack",["apple"]],["Papaya","1 cup",145,60,0.7,15.0,0.2,2.5,"snack",["papaya","pappali"]],["Guava","1 medium",120,68,2.6,14.0,0.9,5.4,"snack",["guava","koyya"]],["Orange","1 medium",130,62,1.2,15.4,0.2,3.1,"snack",["orange"]],["Dark Chocolate","1 sq 20g",20,120,1.6,9.0,8.5,1.8,"snack",["dark chocolate","chocolate"]],["Pasi Payaru Urundai","1 pc",40,150,5.0,22.0,4.5,3.0,"snack",["pasi payaru urundai","moong urundai","payaru urundai"]],["Peanut Urundai","1 pc",40,190,5.5,20.0,10.0,2.2,"snack",["peanut urundai","kadalai urundai"]],["Ellu Urundai","1 pc",35,175,4.0,18.0,10.0,3.0,"snack",["ellu urundai","sesame ball","yellurundai"]],["Sundal (Chana)","1 cup",120,190,9.5,26.0,4.5,7.5,"snack",["chana sundal","kadalai sundal"]],["Ghee","1 tsp",5,45,0.0,0.0,5.0,0.0,"misc",["ghee","nei"]],["Cooking Oil","1 tsp",5,45,0.0,0.0,5.0,0.0,"misc",["oil","cooking oil","gingelly oil"]],["Sugar","1 tsp",5,20,0.0,5.0,0.0,0.0,"misc",["sugar","sakkarai"]],["Honey","1 tsp",7,21,0.0,5.8,0.0,0.0,"misc",["honey","then"]],["Oats (cooked)","1 cup",240,160,6.0,28.0,3.2,4.0,"misc",["oats","oatmeal"]],["Ragi Malt","1 glass",250,180,4.5,34.0,2.5,4.5,"misc",["ragi malt","ragi kanji","ragi java"]],["Sweet Potato","1 medium",150,135,2.5,31.0,0.2,4.8,"misc",["sweet potato","sarkaraivalli"]],["Salad (cucumber tomato onion)","1 bowl",150,45,1.5,9.0,0.4,2.5,"misc",["salad","cucumber salad","kosumalli"]]];
 
-5:{n:'Optional · Full Body B',ic:'🏋️',gym:0,ex:[
-['Hack / Goblet Squat','3x12',['squat','hack','goblet'],'Leg Press 3x12','legs'],
-['Hip Thrust','3x12',['hip thrust','thrust'],'Glute Bridge 3x15','legs'],
-['Chest-Supported Row','3x10',['row','csr'],'Cable Row 3x12','back'],
-['Cable Fly','3x12',['fly','flys'],'Pec Deck 3x12','chest'],
-['Lateral Raise','3x15',['lateral','side raise'],'Cable Lateral 3x15','shoulder'],
-['Hammer Curl + Rope Pushdown','3x12 ss',['hammer','pushdown'],'Barbell Curl + Dips 3x12','bi'],
-['CIRCUIT ×2 · Cable Woodchop','x12/s',['woodchop','chop'],'Med Ball Twist x15','core'],
-['CIRCUIT ×2 · Pallof Press','x12/s',['pallof'],'Anti-rot Hold 30s','core'],
-['CIRCUIT ×2 · Side Plank','30s/s',['side plank'],'Suitcase Carry 30m','core'],
-['CIRCUIT ×2 · Dead Bug','x10/s',['dead bug'],'Bird Dog x10','core'],
-['CIRCUIT ×2 · Ab Wheel / Reverse Crunch','x12',['ab wheel','reverse crunch'],'Leg Raise x15','core']]},
-6:{n:'Cricket Match',ic:'🏏',gym:1,ex:[
-['Band activation','10 min',['band','activation'],'Dynamic Warm-up','core'],
-['Light goblet squats','2 sets',['goblet'],'BW Squat 2x15','legs'],
-['Rotational swings','2 sets',['swing'],'Trunk Rotations 2x15','core'],
-['MATCH','play well',['match','cricket'],'Net Practice','core']]},
-0:{n:'Recovery',ic:'😌',gym:0,ex:[
-['Brisk walk','45-60 min',['walk'],'Easy cycle 45 min','cardio'],
-['Superman + Cobra','3 sets',['superman','cobra'],'Back Extension 3x12','core'],
-['Butterfly + full stretch','15 min',['butterfly','stretch'],'Yoga flow 15 min','core']]}};
+const MUSC={chest:'Chest',tri:'Triceps',shoulder:'Shoulders',bi:'Biceps',back:'Back & Lats',legs:'Legs & Glutes',core:'Core & Abs',cardio:'Whole body',neck:'Neck',hipf:'Hip Flexors',calf:'Calves',wrist:'Wrists & Forearms',abd:'Glute Medius',add:'Adductors',cuff:'Rotator Cuff',serr:'Serratus',hip:'Hips & Glutes',ham:'Hamstrings',spine:'Spine & Back'};
+const MAJOR={
+chest:{t:'Chest + Triceps',ic:'\u{1F4AA}',arm:'tri',slots:[
+ ['Barbell Bench Press','Flat DB Press','Machine Chest Press'],
+ ['Incline DB Press','Incline Barbell Press','Incline Machine Press'],
+ ['Cable Fly','Pec Deck','DB Fly'],
+ ['Cable Crossover','Low to High Cable Fly','Incline DB Fly'],
+ ['Dips (Chest)','Decline DB Press','Hammer Strength Press'],
+ ['Push-ups','Svend Press','Landmine Press']]},
+back:{t:'Back + Biceps',ic:'\u{1F53A}',arm:'bi',slots:[
+ ['Deadlift','Trap Bar Deadlift','Rack Pull'],
+ ['Pull-up','Assisted Pull-up','Lat Pulldown'],
+ ['Barbell Row','T-Bar Row','Pendlay Row'],
+ ['Chest-Supported Row','Seated Cable Row','Machine Row'],
+ ['Close-grip Pulldown','Reverse-grip Pulldown','Single-arm DB Row'],
+ ['Straight-arm Pulldown','Pullover','Cable Pullover']]},
+shoulder:{t:'Shoulders + Biceps',ic:'\u{1F3AF}',arm:'bi',slots:[
+ ['Seated DB Shoulder Press','Barbell Overhead Press','Machine Shoulder Press'],
+ ['Arnold Press','Smith Machine Press','Push Press'],
+ ['Lateral Raise','Cable Lateral Raise','Machine Lateral Raise'],
+ ['DB Front Raise','Plate Front Raise','Cable Front Raise'],
+ ['Rear Delt Fly','Reverse Pec Deck','Cable Rear Delt Fly'],
+ ['Upright Row','Barbell Shrug','DB Shrug']]},
+legs:{t:'Legs + Triceps',ic:'\u{1F9B5}',arm:'tri',slots:[
+ ['Barbell Back Squat','Hack Squat','Front Squat'],
+ ['Leg Press','Smith Machine Squat','Pendulum Squat'],
+ ['Romanian Deadlift','DB Romanian Deadlift','Good Morning'],
+ ['Bulgarian Split Squat','Walking Lunge','Reverse Lunge'],
+ ['Leg Extension','Sissy Squat','Single-leg Press'],
+ ['Lying Leg Curl','Seated Leg Curl','Hip Thrust']]}};
+const ARMS={
+ tri:[['Rope Pushdown','Bar Pushdown','Single-arm Pushdown'],
+      ['Overhead Tricep Extension','Rope Overhead Extension','Skull Crusher'],
+      ['DB Kickback','Cable Kickback','Bench Dips']],
+ bi:[['Barbell Curl','EZ Bar Curl','Cable Curl'],
+     ['Hammer Curl','Rope Hammer Curl','Zottman Curl'],
+     ['Preacher Curl','Incline DB Curl','Concentration Curl']]};
+const CORESLOT=[
+ ['Hanging Leg Raise','Hanging Knee Raise','Lying Leg Raise'],
+ ['Plank','Hollow Hold','Ab Wheel Rollout'],
+ ['Cable Crunch','Reverse Crunch','Decline Sit-up'],
+ ['Cable Woodchop','Pallof Press','Med Ball Twist'],
+ ['Side Plank','Dead Bug','Bird Dog'],
+ ['Russian Twist','Bicycle Crunch','V-Up']];
+const MINSLOT={
+ abd:['Hip Abduction Machine','Band Lateral Walk','Clamshell'],
+ add:['Hip Adduction Machine','Copenhagen Plank','Hip Adduction Machine'],
+ calf:['Standing Calf Raise','Seated Calf Raise','Leg Press Calf Raise'],
+ cuff:['Face Pull','External Rotation (Cable)','Band External Rotation'],
+ serr:['Serratus Punch','Wall Slide','Scapular Pull-up'],
+ wrist:['Wrist Curl','Reverse Wrist Curl','Farmer Carry'],
+ neck:['Neck Isometric','Neck Curl','Neck Extension'],
+ hipf:['Hip Flexor Raise','Banded Hip Flexor March','Hip Flexor Raise'],
+ tib:['Tibialis Raise','Heel Walk','Tibialis Raise']};
+const CARDIOSLOT=['Incline Treadmill Walk','Stairmaster','Stationary Bike','Rowing Machine','Elliptical'];
+const CYC=[{w:'A',mon:'chest',thu:'shoulder'},{w:'B',mon:'back',thu:'legs'}];
+function exBy(n){const e=EXDB.find(x=>x[0]===n);return e?[e[0],e[4],e[3],e[5],e[1]]:null;}
+function rot(l,r){return l[((r%l.length)+l.length)%l.length];}
+function majorDay(dw,wi,r){
+ const key=CYC[wi][dw===1?'mon':'thu'],M=MAJOR[key];
+ const main=M.slots.map((sl,i)=>exBy(rot(sl,r+i)));
+ const arm=ARMS[M.arm].map((sl,i)=>exBy(rot(sl,r+i)));
+ const core=[exBy(rot(CORESLOT[r%6],r)),exBy(rot(CORESLOT[(r+3)%6],r+1))];
+ return{key,arm:M.arm,name:M.t,icon:M.ic,major:1,gym:1,ex:main.concat(arm).concat(core).filter(Boolean)};}
+/* Tue+Fri = LIGHT minors. Wed+Sat = FULL minors+core+cardio */
+function minorDay(dw,wi,r){
+ const heavy=[CYC[wi].mon,CYC[wi].thu,MAJOR[CYC[wi].mon].arm,MAJOR[CYC[wi].thu].arm];
+ const light=(dw===2||dw===5);
+ const groups=light?(dw===2?['cuff','calf']:['wrist','neck']):(dw===3?['abd','add','calf','cuff','serr']:['wrist','neck','hipf','tib','cuff']);
+ const ex=[],seen=new Set();
+ groups.forEach((g,i)=>{if(heavy.includes(g))return;const e=exBy(rot(MINSLOT[g],r+i));if(e&&!seen.has(e[0])){seen.add(e[0]);ex.push(e);}});
+ const nCore=light?2:4;
+ for(let i=0;i<nCore;i++){const e=exBy(rot(CORESLOT[(r+i)%6],r+i));if(e&&!seen.has(e[0])){seen.add(e[0]);ex.push(e);}}
+ const c=exBy(light?'Brisk Walk':rot(CARDIOSLOT,r+dw));if(c&&!seen.has(c[0]))ex.push(c);
+ const nm=light?'Light Minors + Core':(dw===3?'Minors + Core A':'Minors + Core B');
+ return{name:nm,icon:light?'\u{1FAB6}':'\u{1F501}',major:0,gym:light?0:1,ex};}
+function restDay(dw){
+ const F={0:{n:'Recovery',i:'\u{1F60C}',g:0,l:['Brisk Walk','Cobra Arch','Bird Dog']}};
+ const r=F[dw];return{name:r.n,icon:r.i,major:0,gym:r.g,ex:r.l.map(exBy).filter(Boolean)};}
+function dayPlanFor(dw,wi,r){
+ if(dw===1||dw===4)return majorDay(dw,wi,r);
+ if(dw===2||dw===3||dw===5||dw===6)return minorDay(dw,wi,r);
+ return restDay(dw);}
+const INFOKW=(function(){const o={};EXDB.forEach(e=>{o[e[0]]=e[3];});return o;})();
 const CARDIO=['Incline treadmill','Stairmaster','Bike','Rower','Elliptical','Brisk walk','Assault bike intervals','Cricket match'];
 const STRETCH=[
 ['Neck rolls','neck',0,'Slowly circle the head, half circles front only. 5 each way.','Never roll backwards through the top \u2014 go ear to chest to ear.'],
@@ -600,7 +622,6 @@ const DEEP=[
 'TG responds fastest, often within weeks. HDL moves slowly and mostly through sustained exercise. Liver enzymes track the liver fat itself. If TG has dropped meaningfully but HDL has not, that is normal and not a failure. If nothing has moved, the honest first suspect is alcohol frequency, then total intake.'],
 ['Why strength holding is the real success metric',
 'If your lifts stay flat or climb while the scale drops, the weight leaving is fat and the muscle is intact. If lifts fall across two consecutive weeks alongside the scale, you are cutting too hard and the answer is to add 100-150 kcal back, not to train more.']];
-const MUSC={chest:'Chest',tri:'Triceps',shoulder:'Shoulders',bi:'Biceps',back:'Back & Lats',legs:'Legs & Glutes',core:'Core & Abs',cardio:'Whole body',neck:'Neck',hip:'Hips & Glutes',ham:'Hamstrings & Calves',wrist:'Wrists & Forearms',spine:'Spine & Back'};
 const INFO={
 'Barbell Bench Press':['Lie flat, grip just wider than shoulders. Lower the bar to mid-chest with elbows about 45 degrees from your body, then press up.','Keep shoulder blades pinched back and feet planted.','Flaring elbows straight out to the sides \u2014 hard on the shoulder joint.'],
 'Incline DB Press':['Bench at 30-45 degrees. Press dumbbells from chest level up and slightly together.','Angle hits the upper chest, which is what builds the fuller look under a shirt.','Setting the bench too steep turns it into a shoulder press.'],
@@ -667,15 +688,8 @@ const INFO={
 'Butterfly + full stretch':['Soles of the feet together, knees dropping outward, then run through the rest of the body.','Hips are the tightest area for a desk job. Give them the most time.','Pushing the knees down hard with the hands.'],
 'Hammer Curl + Rope Pushdown':['Superset \u2014 do a set of hammer curls, then immediately a set of pushdowns, then rest.','Biceps and triceps back to back saves time and keeps the heart rate up.','Resting between the two halves and losing the superset effect.'],
 'Wrist Curls':['Forearms on the thighs, palms up, curl the wrists up and down. Then flip palms down and repeat.','Builds grip and forearm, which carries into batting.','Using too much weight and letting the elbows move.']};
-const FOODS=[
-['2 eggs','egg',13],['3 idli','idli',6],['Dosa','dosa',5],['Curd bowl','curd',6],
-['Dal / sambar','dal',7],['Chicken 150g','chicken',40],['Fish 150g','fish',33],
-['Paneer 100g','paneer',18],['Whey scoop','whey',25],['Chana / rajma','chana',12],
-['Peanuts 30g','nuts',8],['Rice + veg','rice',5]];
-const INFOKW=(function(){const o={};
-FOCUS.forEach(f=>f.ex.forEach(e=>{o[e[0]]=e[2];}));
-Object.keys(DAY).forEach(k=>DAY[k].ex.forEach(e=>{o[e[0].replace(/^CIRCUIT ×2 · /,'')]=e[2];}));
-return o;})();
+EXDB.forEach(e=>{if(!INFO[e[0]])INFO[e[0]]=['','',''];});
+
 const KEY='raghul-forge-v4',CYCLE_START='2026-09-07',PT=150,ST=10000,SL=7.5;
 let S={w:{'2026-08-03':77.25},d:{},cardio:{},stretch:{},notes:{},added:{},swaps:{},skipped:{},prot:{},steps:{},sleep:{}};
 try{let raw=localStorage.getItem(KEY)||localStorage.getItem('raghul-forge-v3')||localStorage.getItem('raghul-forge-v2')||localStorage.getItem('raghul-forge-v1');
@@ -695,22 +709,12 @@ function cv(name){return getComputedStyle(document.documentElement).getPropertyV
 function shift(n){const d=new Date(cur+'T12:00:00');d.setDate(d.getDate()+n);cur=iso(d);render();}
 function goToday(){cur=tk();render();}
 function weekIdx(k){const d=Math.floor((new Date(k+'T12:00:00')-new Date(CYCLE_START+'T12:00:00'))/864e5);return ((Math.floor(d/7)%2)+2)%2;}
-function focusOf(k){const w=weekIdx(k),dw=new Date(k+'T12:00:00').getDay();
-if(dw===4)return FOCUS[w===0?1:3];
-return FOCUS[w===0?0:2];}
-function focusFor(dw,w){return dw===4?FOCUS[w===0?1:3]:FOCUS[w===0?0:2];}
-function trimFocus(f){const core=f.ex.filter(e=>e[4]==='core');
-const main=f.ex.filter(e=>e[4]!=='core').slice(0,7);
-return main.concat(core.slice(0,2));}
+function rotIdx(k){const d=Math.floor((new Date(k+'T12:00:00')-new Date(CYCLE_START+'T12:00:00'))/864e5);return Math.max(0,Math.floor(d/14));}
+function focusFor(dw,w,k){const key=CYC[w][dw===4?'thu':'mon'];return{k:key,t:MAJOR[key].t,ic:MAJOR[key].ic};}
+function focusOf(k){return focusFor(new Date(k+'T12:00:00').getDay(),weekIdx(k),k);}
 function baseFor(k,dw){
-const w=weekIdx(k);
-if(dw===1||dw===4){const f=focusFor(dw,w);
-return{name:f.t,icon:f.ic,focus:1,gym:1,ex:trimFocus(f)};}
-const p=DAY[dw];
-const heavy=[focusFor(1,w).k,focusFor(4,w).k];
-let seen={};
-const ex=p.ex.filter(e=>{if(heavy.indexOf(e[4])>=0&&e[4]!=='core'){seen[e[4]]=(seen[e[4]]||0)+1;return seen[e[4]]<=1;}return true;});
-return{name:p.n,icon:p.ic,focus:0,gym:p.gym,ex};}
+const p=dayPlanFor(dw,weekIdx(k),rotIdx(k));
+return{name:p.name,icon:p.icon,focus:p.major?1:0,gym:p.gym,ex:p.ex};}
 function dayList(k,dw){
 const b=baseFor(k,dw),sw=S.swaps[k]||{},skip=S.skipped[k]||[];
 const base=b.ex.map((e,i)=>{const id=dw+'-'+i;
@@ -859,7 +863,7 @@ document.getElementById('dcSub').textContent=isT?'Today · '+b.name:(diff===-1?'
 document.getElementById('dcBox').classList.toggle('past',!isT);
 document.getElementById('btnToday').classList.toggle('hide',isT);
 const w=weekIdx(cur);
-document.getElementById('cycLine').innerHTML='Week '+(w===0?'A':'B')+' \u00b7 Mon <b>'+focusFor(1,w).t+'</b> \u00b7 Thu <b>'+focusFor(4,w).t+'</b>';
+document.getElementById('cycLine').innerHTML='Week '+(w===0?'A':'B')+' \u00b7 Mon <b>'+focusFor(1,w,cur).t+'</b> \u00b7 Thu <b>'+focusFor(4,w,cur).t+'</b>';
 document.getElementById('secW').classList.toggle('focus',!!b.focus);
 document.getElementById('wIcon').textContent=b.icon;
 const a=avg7(),sw=startW(),dates=Object.keys(S.w).sort();
@@ -958,26 +962,92 @@ const l=document.createElement('div');l.className='p';l.textContent='min';d.appe
 el.appendChild(d);});
 document.getElementById('cCount').textContent=Object.values(c).reduce((a,b)=>a+b,0)+' min';}
 
-function foodTotal(k){const f=S.food[k]||{};
-return FOODS.reduce((a,[,id,g])=>a+(f[id]||0)*g,0);}
-function renderFood(){
-const g=document.getElementById('foodGrid');if(!g)return;g.innerHTML='';
-const f=S.food[cur]||{};
-FOODS.forEach(([label,id,gr])=>{const n=f[id]||0;
-const d=document.createElement('div');d.className='fchip'+(n?' on':'');
-d.innerHTML='<b>'+label+'</b><span>'+gr+'g protein</span>'+(n>1?'<div class="cnt">'+n+'</div>':n?'<div class="cnt">1</div>':'');
-d.onclick=()=>{const ff=S.food[cur]||{};ff[id]=(ff[id]||0)+1;S.food[cur]=ff;
-S.prot[cur]=foodTotal(cur);P();
-const left=PT-S.prot[cur];
-toast('\u2713 '+label+' \u00b7 '+S.prot[cur]+'g'+(left>0?' \u00b7 '+left+'g to go':' \u00b7 target hit'));render();};
-d.oncontextmenu=e=>{e.preventDefault();const ff=S.food[cur]||{};if(ff[id]){ff[id]--;if(!ff[id])delete ff[id];}
-S.food[cur]=ff;S.prot[cur]=foodTotal(cur);P();render();};
-g.appendChild(d);});
-const tot=S.prot[cur]||0;
-document.getElementById('pTot').textContent=tot+'g';
-document.getElementById('pTot').style.color=tot>=PT?'var(--accent)':tot>=110?'var(--warn)':'var(--text-mute)';
-document.getElementById('pSub').textContent=tot>=PT?'target hit \u00b7 tap and hold a tile to undo':(PT-tot)+'g to go \u00b7 tap and hold a tile to undo';}
+
+/* ===== FOOD ENGINE ===== */
+function fIdx(name){return FOODDB.findIndex(f=>f[0]===name);}
+function macrosFor(entry){
+ const f=FOODDB[entry.i];if(!f)return{k:0,p:0,c:0,ft:0,fb:0};
+ const mult=entry.g?entry.g/f[2]:(entry.n||1);
+ return{k:f[3]*mult,p:f[4]*mult,c:f[5]*mult,ft:f[6]*mult,fb:f[7]*mult};}
+function dayMacros(k){
+ const list=S.food[k]||[];
+ const t={k:0,p:0,c:0,ft:0,fb:0};
+ list.forEach(e=>{const m=macrosFor(e);t.k+=m.k;t.p+=m.p;t.c+=m.c;t.ft+=m.ft;t.fb+=m.fb;});
+ return t;}
+function syncProt(){S.prot[cur]=Math.round(dayMacros(cur).p);if(!S.prot[cur])delete S.prot[cur];}
+function addFood(idx,grams){
+ const list=S.food[cur]||[];
+ if(!grams){const ex=list.find(e=>e.i===idx&&!e.g);
+  if(ex){ex.n=(ex.n||1)+1;}else list.push({i:idx,n:1});}
+ else list.push({i:idx,g:grams});
+ S.food[cur]=list;syncProt();P();
+ const f=FOODDB[idx],tot=Math.round(dayMacros(cur).p),left=PT-tot;
+ toast('\u2713 '+f[0]+' \u00b7 '+tot+'g protein'+(left>0?' \u00b7 '+left+'g to go':' \u00b7 target hit'));
+ render();}
+function removeFood(pos){const l=S.food[cur]||[];
+ if(l[pos]&&l[pos].n>1)l[pos].n--;else l.splice(pos,1);
+ S.food[cur]=l;syncProt();P();render();}
 function clearFood(){delete S.food[cur];delete S.prot[cur];P();toast('Food cleared');render();}
+function sameAsYesterday(){
+ const d=new Date(cur+'T12:00:00');d.setDate(d.getDate()-1);
+ const y=S.food[iso(d)];
+ if(!y||!y.length){toast('Nothing logged yesterday',1);return;}
+ S.food[cur]=JSON.parse(JSON.stringify(y));syncProt();P();
+ toast('\u2713 Copied '+y.length+' items from yesterday');render();}
+function freqFoods(){
+ const c={};Object.keys(S.food).forEach(k=>(S.food[k]||[]).forEach(e=>{c[e.i]=(c[e.i]||0)+(e.n||1);}));
+ const top=Object.keys(c).sort((a,b)=>c[b]-c[a]).slice(0,8).map(Number);
+ if(top.length>=4)return top;
+ const def=['Idli','Boiled Egg','Curd','White Rice','Sambar','Chicken Curry','Filter Coffee','Chapati'].map(fIdx).filter(x=>x>=0);
+ return [...new Set(top.concat(def))].slice(0,8);}
+function foodSearch(q){
+ const ql=q.toLowerCase().trim();
+ if(!ql)return[];
+ let out=[];
+ FOODDB.forEach((f,i)=>{
+  let score=0;
+  if(f[0].toLowerCase().startsWith(ql))score=100;
+  else if(f[0].toLowerCase().includes(ql))score=60;
+  f[9].forEach(k=>{if(k===ql)score=Math.max(score,120);
+   else if(k.startsWith(ql))score=Math.max(score,90);
+   else if(k.includes(ql))score=Math.max(score,50);});
+  if(score)out.push([score,i]);});
+ return out.sort((a,b)=>b[0]-a[0]).slice(0,12).map(x=>x[1]);}
+function renderFood(){
+ const q=document.getElementById('fSearch');if(!q)return;
+ const quick=document.getElementById('fQuick');quick.innerHTML='';
+ freqFoods().forEach(i=>{const f=FOODDB[i];if(!f)return;
+  const b=document.createElement('div');b.className='fq';
+  b.textContent=f[0]+' +'+Math.round(f[4])+'g';
+  b.onclick=()=>{addFood(i);};quick.appendChild(b);});
+ const res=document.getElementById('fRes');res.innerHTML='';
+ const hits=foodSearch(q.value);
+ hits.forEach(i=>{const f=FOODDB[i];
+  const d=document.createElement('div');d.className='fi';
+  d.innerHTML='<div class="fn"><b>'+f[0]+'</b><span>'+f[1]+' \u00b7 '+f[2]+'g \u00b7 '+f[3]+' kcal</span></div>'+
+   '<div class="fp">'+f[4]+'g P</div>';
+  const gb=document.createElement('div');gb.className='fg';gb.textContent='g';
+  gb.onclick=e=>{e.stopPropagation();
+   const v=prompt('How many grams of '+f[0]+'?  (default portion = '+f[2]+'g)');
+   const n=parseFloat(v);if(n>0&&n<3000){addFood(i,n);q.value='';renderFood();}};
+  const ab=document.createElement('button');ab.className='fadd';ab.textContent='+';
+  ab.onclick=e=>{e.stopPropagation();addFood(i);q.value='';renderFood();};
+  d.appendChild(gb);d.appendChild(ab);res.appendChild(d);});
+ const m=dayMacros(cur);
+ document.getElementById('fMac').innerHTML=
+  '<div class="mp"><b>'+Math.round(m.p)+'</b><span>PROTEIN g</span></div>'+
+  '<div><b>'+Math.round(m.k)+'</b><span>KCAL</span></div>'+
+  '<div><b>'+Math.round(m.c)+'</b><span>CARB g</span></div>'+
+  '<div><b>'+Math.round(m.ft)+'</b><span>FAT g</span></div>'+
+  '<div><b>'+Math.round(m.fb)+'</b><span>FIBRE g</span></div>';
+ const eb=document.getElementById('fEaten');eb.innerHTML='';
+ (S.food[cur]||[]).forEach((e,pos)=>{const f=FOODDB[e.i];if(!f)return;
+  const mm=macrosFor(e);
+  const d=document.createElement('div');d.className='eaten';
+  d.innerHTML='<div class="en">'+f[0]+(e.g?' <span style="color:var(--text-mute)">'+e.g+'g</span>':(e.n>1?' \u00d7'+e.n:''))+
+   '</div><div class="fp">'+Math.round(mm.p)+'g P</div><div class="ex2">\u00d7</div>';
+  d.querySelector('.ex2').onclick=()=>removeFood(pos);
+  eb.appendChild(d);});}
 function renderStretch(){
 const el=document.getElementById('stretchList');el.innerHTML='';const sel=S.stretch[cur]||[];
 SREG.forEach(([rg,label])=>{
@@ -999,7 +1069,7 @@ toast('\u2713 Core stretches marked');render();}
 function renderWeek(){
 const wv=document.getElementById('weekView');if(!wv)return;wv.innerHTML='';
 const n=new Date(cur+'T12:00:00'),m=new Date(n);m.setDate(n.getDate()-((n.getDay()+6)%7));
-const LBL={1:'FOCUS',2:'rest',3:'GYM',4:'FOCUS',5:'opt',6:'🏏',0:'rest'};
+const LBL={1:'HEAVY',2:'light',3:'GYM',4:'HEAVY',5:'light',6:'GYM',0:'rest'};
 for(let i=0;i<7;i++){const d=new Date(m);d.setDate(m.getDate()+i);
 const k=iso(d),dd=d.getDay(),b=baseFor(k,dd);
 const pg=prog(k,dd);const p=pg.pct;
@@ -1013,7 +1083,7 @@ wv.appendChild(e);}
 function renderCycRow(){const r=document.getElementById('cycRow');if(!r)return;r.innerHTML='';
 const w=weekIdx(cur);
 [[0,'A',1],[0,'A',4],[1,'B',1],[1,'B',4]].forEach(([wk,lab,dw])=>{
-const f=focusFor(dw,wk);const d=document.createElement('div');
+const f=focusFor(dw,wk,cur);const d=document.createElement('div');
 d.className='cyc1'+(wk===w?' now':'');
 d.innerHTML=f.ic+'<br>'+lab+' '+DN[dw].slice(0,3);r.appendChild(d);});}
 
@@ -1147,8 +1217,8 @@ inp.placeholder='Search any exercise \u2014 e.g. preacher, deadlift, plank';
 b.appendChild(inp);
 const res=document.createElement('div');b.appendChild(res);
 const lib=[];const seen=new Set();
-FOCUS.forEach(f=>f.ex.forEach(e=>{if(seen.has(e[0]))return;seen.add(e[0]);lib.push({n:e[0],r:e[1],m:e[4],src:f.t});}));
-Object.keys(DAY).forEach(dw=>DAY[dw].ex.forEach(e=>{if(seen.has(e[0]))return;seen.add(e[0]);lib.push({n:e[0],r:e[1],m:e[4],src:DAY[dw].n});}));
+EXDB.forEach(e=>{if(seen.has(e[0]))return;seen.add(e[0]);lib.push({n:e[0],r:e[4],m:e[1],src:MUSC[e[1]]||e[1]});});
+
 const GN={chest:'Chest',tri:'Triceps',shoulder:'Shoulders',bi:'Biceps',back:'Back',legs:'Legs',core:'Core',cardio:'Cardio'};
 const draw=q=>{res.innerHTML='';
 const ql=(q||'').toLowerCase().trim();
@@ -1179,10 +1249,7 @@ const k=iso(d),dw=d.getDay(),done=S.d[k]||[];if(!done.length)continue;
 const list=dayList(k,dw).filter(x=>done.includes(x.id));
 o.push({k,dw,b:baseFor(k,dw),list,cardio:cMin(k),prot:S.prot[k]||0,sleep:S.sleep[k]||0,steps:S.steps[k]||0,note:S.notes[k]||''});}
 return o;}
-function allEx(){const o=[];
-FOCUS.forEach((f,fi)=>f.ex.forEach((e,i)=>o.push({e,src:'F'+fi,idx:i,label:f.t})));
-Object.keys(DAY).forEach(dw=>DAY[dw].ex.forEach((e,i)=>o.push({e,src:'D'+dw,idx:i,label:DAY[dw].n})));
-return o;}
+function allEx(){return EXDB.map(e=>({e:[e[0],e[4],e[3],e[5],e[1]],src:'X',idx:0,label:MUSC[e[1]]||e[1]}));}
 function findUpcoming(word){
 for(let i=1;i<=21;i++){const d=new Date(cur+'T12:00:00');d.setDate(d.getDate()+i);
 const k=iso(d),dw=d.getDay(),sw=S.swaps[k]||{},bb=baseFor(k,dw);
@@ -1638,6 +1705,13 @@ b.onclick=()=>{S.mood[cur]=cv===id?undefined:id;if(S.mood[cur]===undefined)delet
 if(S.mood[cur])toast('Logged \u00b7 thanks for checking in');
 renderMood();showInsight(0);};
 el.appendChild(b);});}
+(function(){const q=document.getElementById('fSearch');
+if(q){let t;q.addEventListener('input',()=>{clearTimeout(t);t=setTimeout(renderFood,90);});}})();
+(function(){/* migrate old {id:count} food format to array */
+Object.keys(S.food||{}).forEach(k=>{const v=S.food[k];
+ if(v&&!Array.isArray(v)){const OLD={egg:'Boiled Egg',idli:'Idli',dosa:'Plain Dosa',curd:'Curd',dal:'Toor Dal',chicken:'Chicken Curry',fish:'Fish Curry',paneer:'Paneer',whey:'Whey Protein',chana:'Boiled Chana',nuts:'Peanuts (roasted)',rice:'White Rice'};
+  const arr=[];Object.keys(v).forEach(id=>{const nm=OLD[id];const fi=nm?fIdx(nm):-1;if(fi>=0)arr.push({i:fi,n:v[id]});});
+  S.food[k]=arr;}});P();})();
 document.getElementById('insight').onclick=()=>showInsight(insIdx+1);
 render();
 </script>
